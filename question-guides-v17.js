@@ -63,7 +63,7 @@ export function easyText(input){
 }
 function reasonForWrong(q){
  const correct=q[2][q[3]],wrong=q[2][1-q[3]];
- return '“'+easyText(wrong)+'”를 고르면 왜 아쉬울까요? 실제 상황에서 그렇게 행동하면 헷갈리거나 위험할 수 있어요. '+easyText(q[4])+' 먼저 문제의 상황과 다른 선택지를 비교해 보세요.';
+ return '“'+easyText(wrong)+'”는 이 상황에 알맞지 않은 선택이에요. '+easyText(q[4])+' 그래서 “'+easyText(correct)+'”를 선택하는 것이 맞아요. 답을 외우기보다 왜 그런지 생각해 보세요.';
 }
 export function getQuestionGuide(chapter,index,question){
  const intro=LESSON_INTROS[chapter],scene=SCENES[chapter][index],right=easyText(question[2][question[3]]),wrong=easyText(question[2][1-question[3]]),why=easyText(question[4]);
