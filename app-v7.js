@@ -148,9 +148,38 @@ function watch(){if(unwatch){unwatch();unwatch=null}if(studentControl){studentCo
 function drawTeacher(key,students){const s=SESSIONS[key];const total=students.length;const done=students.filter(x=>x.step>=8).length;$('stats').innerHTML=`<div class="stat"><strong>${total}</strong><span>등록 학생</span></div><div class="stat"><strong>${s.planned}</strong><span>준비 기준</span></div><div class="stat"><strong>${done}</strong><span>8단계 완료</span></div>`;
  $('stages').innerHTML=GAMES.map(([e,n],i)=>{const c=students.filter(x=>x.step>=i+1).length;return `<div class="barRow"><div class="barHeader"><span>${e} ${esc(n)}</span><span>${c}명</span></div><div class="bar"><div style="width:${total?c/total*100:0}%"></div></div></div>`}).join('');
  const d={};for(const x of students){let v=x.answers?.['4']?.dream;if(v)d[v]=(d[v]||0)+1}$('dreams').innerHTML=Object.entries(d).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span class="stepchip" style="display:inline-block;margin:4px">${esc(k)} ${v}명</span>`).join('')||'<p class="subtle">아직 꿈을 선택한 학생이 없어요.</p>';
- $('students').innerHTML=students.slice().sort((a,b)=>b.step-a.step).map(x=>`<div class="student"><div class="barHeader"><span>${esc(x.name)}</span><span>${Number(x.step)||0} / 8</span></div><div class="bar"><div style="width:${Math.min(100,Math.max(0,(Number(x.step)||0)/8*100))}%"></div></div><small class="subtle">${esc(x.answers?.['4']?.dream||'꿈 선택 전')} · ${esc(x.answers?.['5']?.title||'제목 선택 전')}</small></div>`).join('')||'<p class="subtle">아직 등록한 학생이 없어요.</p>';
+ $('students').innerHTML=students.slice().sort((a,b)=>b.step-a.step).map(x=>`<div class="student"><div class="barHeader"><span>${esc(x.name)}</span><span>${Number(x.step)||0} / 8</span></div><div class="bar"><div style="width:${Math.min(100,Math.max(0,(Number(x.step)||0)/8*100))}%"></div></div><small class="subtle">${esc(x.answers?.['4']?.dream||'꿈 선택 전')} · ${esc(x.answers?.['5']?.title||'제목 선택 전')}</small><button type="button" class="mini dangerDelete" data-delete-student="${esc(x.id)}" data-student-name="${esc(x.name)}">🗑️ 이 학생 기록 삭제</button></div>`).join('')||'<p class="subtle">아직 등록한 학생이 없어요.</p>';
+  $('students').querySelectorAll('[data-delete-student]').forEach(btn=>btn.onclick=async()=>{
+    const id=btn.dataset.deleteStudent,name=btn.dataset.studentName,key=$('teacherSession').value;
+    if(!confirm(`[${SESSIONS[key].school}] ${name} 학생의 모든 게임 기록을 삭제할까요?\n삭제 후 복구할 수 없습니다.`))return;
+    btn.disabled=true;
+    try{await api.deleteStudentRecord(key,id);toast(name+' 학생 기록을 삭제했습니다.');}
+    catch(e){toast('삭제 실패: '+e.message);btn.disabled=false;}
+  });
+}
+async function clearTestingStudents(){
+ const key=$('teacherSession').value,school=SESSIONS[key].school;
+ if(!confirm(`[${school}] 수업의 모든 학생 기록을 삭제하시겠습니까?\n실제 수업 기록도 삭제되며 복구할 수 없습니다.`))return;
+ const phrase=prompt(`정말 전체 삭제하려면 아래 글자를 정확히 입력하세요.\n\n초기화 ${key}`);
+ if(phrase!==`초기화 ${key}`){toast('확인 문구가 맞지 않아 취소했습니다.');return;}
+ const b=$('clearStudents');b.disabled=true;
+ try{
+  const count=await api.clearSessionStudents(key,(done,total)=>{$('deleteStatus').textContent=`기록 삭제 중: ${done}/${total}`;});
+  $('deleteStatus').textContent=`학생 기록 ${count}건 삭제 완료. 다른 수업의 기록은 유지됩니다.`;
+  toast('수업 학생 기록을 초기화했습니다.');
+ }catch(e){$('deleteStatus').textContent='초기화 실패: '+e.message;toast('기록 삭제에 실패했습니다.');}
+ finally{b.disabled=false}
 }
 async function teacherLogout(){if(unwatch){unwatch();unwatch=null}if(studentControl){studentControl();studentControl=null}teacherActive=false;await api.teacherLogout();$('teacherAuth').classList.remove('hidden');$('teacherContent').classList.add('hidden');student=null;localStorage.removeItem(localKey(session));show('entry');toast('현황판에서 나왔습니다.')}
 $('joinBtn').onclick=join;$('nickname').onkeydown=e=>{if(e.key==='Enter')join()};$('demoDay').onchange=()=>{chooseDay();show('entry')};$('newStudent').onclick=anotherStudent;$('back').onclick=()=>{clearInterval(slideTimer);slideTimer=null;lobby()};$('teacherLink').onclick=startTeacher;$('teacherBack').onclick=()=>{if(teacherActive){toast('현황판 종료 버튼을 눌러 로그아웃해 주세요.');return}show('entry')};$('teacherLogin').onclick=teacherLogin;$('teacherSession').onchange=watch;$('teacherLogout').onclick=teacherLogout;
 $('saveClassroom').onclick=saveClassroom;$('firstStage').onclick=resetFirstStage;
+$('clearStudents').onclick=clearTestingStudents;
+$('soundToggle').textContent=isSoundOn()?'🔊 소리 켜짐':'🔇 소리 꺼짐';
+$('soundToggle').setAttribute('aria-pressed',String(isSoundOn()));
+$('soundToggle').onclick=()=>{
+ const on=toggleSound();$('soundToggle').textContent=on?'🔊 소리 켜짐':'🔇 소리 꺼짐';
+ $('soundToggle').setAttribute('aria-pressed',String(on));
+ toast(on?'게임 효과음이 켜졌어요!':'소리를 껐어요.');
+};
+
 init();
