@@ -167,7 +167,7 @@ export function renderPrincipleGame(index,name,state,root,{onChange,onComplete,o
  }
  case 12:{
    const picks=Array.isArray(s.picks)?s.picks:[],index=picks.length;
-   const favorite=picks.filter(i=>i===0).length,other=6-favorite;
+   
    body=title('6번 선택해 나의 추천 화면을 만들어 봐요')+'<div class="p11grid">'+recTopics.map((v,i)=>option('topic',i,v)).join('')+'</div>';
    preview=panel('<p>내가 지금까지 고른 주제: '+picks.map(i=>recTopics[i]).join(' · ')+'</p><p>추천 알고리즘은 내가 자주 선택한 주제를 더 많이 보여 줄 수 있어요.</p>');
    if(index>=6)body+=control('allTopics','🧭 놓친 주제도 모두 보기');
@@ -202,7 +202,7 @@ export function renderPrincipleGame(index,name,state,root,{onChange,onComplete,o
    case 'clearWords':s.words=[];break;
    case 'denoise':s.denoise=(get('denoise')+1)%5;break;
    case 'samples':s.samples=(get('samples')+1)%4;break;
-   case 'train':{const x=Array.isArray(s.training)?s.training:[];if(x.length<6&&v===animalCases[x.length][3]?'동물':'탈것')x.push(x.length);s.training=x;break;}
+   case 'train':{const x=Array.isArray(s.training)?s.training:[];if(x.length<6&&v===(x.length<3?'동물':'탈것'))x.push(x.length);s.training=x;break;}
    case 'test':s.testing=v==='동물'?0:1;break;
    case 'verify':s.verify=n;break;
    case 'nextVerify':s.count=count()+1;s.verify=-1;break;
