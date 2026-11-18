@@ -1,0 +1,37 @@
+name: Validate AI Literacy V16
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'app-v16.js'
+      - 'backend-v16.js'
+      - 'mini-games-v16.js'
+      - 'curriculum-v14.js'
+      - 'question-bank-v14.js'
+      - 'style-v16.css'
+      - 'firestore-v16.rules'
+      - 'test-v16.cjs'
+      - '.github/workflows/validate-v16.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'app-v16.js'
+      - 'backend-v16.js'
+      - 'mini-games-v16.js'
+      - 'curriculum-v14.js'
+      - 'question-bank-v14.js'
+      - 'style-v16.css'
+      - 'firestore-v16.rules'
+      - 'test-v16.cjs'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate V16 curriculum, games and UI
+        run: node test-v16.cjs
