@@ -63,7 +63,7 @@ function phase(){
  const done=results()[String(active+1)];
  if(done)return 'complete';
  const ans=correctAnswers();
- for(let i=0;i<ans.length;i++){if(!ans[i])return 'quiz:'+i;if(i%2===1&&!picks['mini'+Math.floor(i/2)]?.done)return 'mini:'+Math.floor(i/2)}
+ for(let i=0;i<ans.length;i++){if(!ans[i])return 'quiz:'+i;if(!picks['seen'+i])return 'explain:'+i;if(i%2===1&&!picks['mini'+Math.floor(i/2)]?.done)return 'mini:'+Math.floor(i/2)}
  for(let i=0;i<3;i++){if(picks['field'+i]===undefined)return 'make:'+i}
  if(!picks.studioDone)return 'studio';
  return 'ready';
@@ -76,6 +76,11 @@ function paintGame(){
  if(p.startsWith('mini:')){
  const i=Number(p.split(':')[1]),state=picks['mini'+i]||{picked:[]};
  html+=renderMini(active,i,state,{onChange:()=>{},onFinish:()=>{},onSound:playSound}).html;
+ }else if(p.startsWith('explain:')){
+  const i=Number(p.split(':')[1]),q=data.q[i];
+  html+='<div class="roundTitle">✨ 정답 해설 · '+(i+1)+'/10</div><div class="quizVisual">'+q[0]+'</div><h3 class="question">'+esc(q[1])+'</h3>';
+  html+='<div class="explanation"><strong>✅ 정답: '+esc(q[2][q[3]])+'</strong><p>'+esc(q[4])+'</p>'+(classroom.grade==='high'?'<p>💡 왜 그런지 자신의 말로 설명해 보세요.</p>':'')+'</div>';
+  html+='<button type="button" class="cta" data-action="nextExplain">다음 도전으로 →</button>';
  }else if(p.startsWith('quiz:')){
   const i=Number(p.split(':')[1]),q=data.q[i],choice=picks['q'+i];html+='<div class="roundTitle">🎮 이해 게임 '+(i+1)+' / 10</div><div class="quizVisual">'+q[0]+'</div><h3 class="question">'+esc(q[1])+'</h3><div class="choices">'+q[2].map((x,k)=>'<button type="button" data-q="'+k+'" class="choice '+(choice===k?'selected':'')+'">'+['💡','🌟'][k]+' '+esc(x)+'</button>').join('')+'</div>';
   if(choice!==undefined){html+='<p class="feedback '+(choice===q[3]?'correct':'tryagain')+'">'+(choice===q[3]?'✅ 잘했어요! ':'🔍 다시 생각해 볼까요? ')+esc(q[4])+'</p>';}
@@ -103,7 +108,7 @@ function paintGame(){
 }
 root.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{const v=Number(b.dataset.q),i=Number(p.split(':')[1]);picks['q'+i]=v;const correct=v===data.q[i][3];if(!correct){picks.misses={...(picks.misses||{}),['q'+i]:(picks.misses?.['q'+i]||0)+1}}playSound(correct?'correct':'wrong');persistDraft();paintGame()});
  root.querySelectorAll('[data-field]').forEach(b=>b.onclick=()=>{const i=Number(p.split(':')[1]);picks['field'+i]=Number(b.dataset.field);persistDraft();playSound('correct');paintGame()});
- root.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const k=b.dataset.action;if(k==='finishStudio'){picks.studentIdea=($('studentIdea')?.value||'').trim().slice(0,200);picks.studioDone=true;persistDraft();playSound('success');paintGame()}else if(k==='save')saveCompleted();else if(k==='download')downloadReport(done);else paintHome()});
+ root.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const k=b.dataset.action;if(k==='nextExplain'){picks['seen'+Number(p.split(':')[1])]=true;persistDraft();paintGame()}else if(k==='finishStudio'){picks.studentIdea=($('studentIdea')?.value||'').trim().slice(0,200);picks.studioDone=true;persistDraft();playSound('success');paintGame()}else if(k==='save')saveCompleted();else if(k==='download')downloadReport(done);else paintHome()});
 }
 
 function reward(text){
@@ -276,7 +281,7 @@ async function init(){
  }catch(e){$('connection').textContent='🔴 연결 오류';$('join').disabled=true;$('studentName').disabled=true;$('alert').classList.remove('hidden');$('alert').textContent='Firebase 연결을 확인해 주세요: '+e.message;console.error(e)}
 }
 async function join(){
- if(!session||busy)return;const name=$('studentName').value.trim().replace(/[<>\\]/g,'').slice(0,14);
+ if(!session||busy)return;if($('classCode').value.trim().toUpperCase()!==session)return toast('먼저 수업 확인 버튼을 눌러 주세요.');const name=$('studentName').value.trim().replace(/[<>\\]/g,'').slice(0,14);
  if(!name)return toast('친구들이 볼 별명을 입력해 주세요.');
  busy=true;$('join').disabled=true;
  try{student=await api.registerStudent(session,name);localStorage.setItem(LS('active:'+session),student.id);subscribeClass();paintHome();toast('✨ AI 리터러시 모험에 오신 것을 환영해요!')}
