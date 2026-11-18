@@ -32,7 +32,7 @@ let session='',student=null,active=-1,picks={},busy=false,watchStudentsStop=null
 let classroom={unlocked:15,paused:false,active:true,grade:'all',school:'',date:''},classStop=null,teacherControlStop=null,checkpointTimer=null,checkpointQueue=Promise.resolve();
 function dateKST(){const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const values={};parts.forEach(p=>values[p.type]=p.value);return values.year+'-'+values.month+'-'+values.day}
 function todaySession(){return Object.keys(SCHOOL).find(k=>SCHOOL[k].day===dateKST())||''}
-function show(page){['joinPage','homePage','gamePage','teacherPage','portfolioPage'].forEach(id=>$(id).classList.toggle('hidden',id!==page));window.scrollTo({top:0,behavior:'smooth'})}
+function show(page){['joinPage','homePage','gamePage','teacherPage','portfolioPage'].forEach(id=>$(id).classList.toggle('hidden',id!==page));document.body.dataset.page=page;window.scrollTo({top:0,behavior:'smooth'})}
 function toast(t){$('toast').textContent=t;$('toast').classList.remove('hidden');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.add('hidden'),4000)}
 function displaySchool(){displayClass()}
 function results(){return student?.answers?.aiLiteracyV16?.completed||{}}
@@ -65,13 +65,14 @@ function phase(){
  const ans=correctAnswers();
  for(let i=0;i<ans.length;i++){if(!ans[i])return 'quiz:'+i;if(i%2===1&&!picks['mini'+Math.floor(i/2)]?.done)return 'mini:'+Math.floor(i/2)}
  for(let i=0;i<3;i++){if(picks['field'+i]===undefined)return 'make:'+i}
+ if(!picks.studioDone)return 'studio';
  return 'ready';
 }
 function paintGame(){
  const data=COURSES[active],p=phase(),root=$('gameContent'),done=results()[String(active+1)],quiz=correctAnswers().filter(Boolean).length,make=[0,1,2].filter(i=>picks['field'+i]!==undefined).length,mini=[0,1,2,3,4].filter(i=>picks['mini'+i]?.done).length;
  $('gamePosition').textContent='MISSION '+String(active+1).padStart(2,'0')+' / 15';
- const progress=Math.round((quiz+make+mini)/18*100);
- let html='<div class="gameHero"><div class="heroEmoji">'+data.icon+'</div><small>'+LEVELS[data.tier]+' · '+esc(data.type)+' 게임</small><h2>'+esc(data.title)+'</h2><p>'+esc(data.goal)+'</p><div class="tinyBar"><span style="width:'+progress+'%"></span></div><small>이해 '+quiz+'/10 · 미니게임 '+mini+'/5 · 창작 '+make+'/3</small></div>';
+ const progress=Math.round((quiz+make+mini+(picks.studioDone?1:0))/19*100);
+ let html='<div class="gameHero"><div class="heroEmoji">'+data.icon+'</div><small>'+LEVELS[data.tier]+' · '+esc(data.type)+' 게임 · '+gradeText()+'</small><h2>'+esc(data.title)+'</h2><p>'+esc(data.goal)+'</p><div class="tinyBar"><span style="width:'+progress+'%"></span></div><small>이해 '+quiz+'/10 · 미니게임 '+mini+'/5 · 창작 '+(make+(picks.studioDone?1:0))+'/4</small></div>';
  if(p.startsWith('mini:')){
  const i=Number(p.split(':')[1]),state=picks['mini'+i]||{picked:[]};
  html+=renderMini(active,i,state,{onChange:()=>{},onFinish:()=>{},onSound:playSound}).html;
@@ -81,8 +82,16 @@ function paintGame(){
  }else if(p.startsWith('make:')){
   const i=Number(p.split(':')[1]),meta=PRODUCTS[active],opts=fieldExamples[active][i];
   html+='<div class="roundTitle">🎨 나만의 창작 '+(i+1)+' / 3</div><h3 class="question">'+esc(meta[i+2])+'</h3><p class="minor">아래 카드 중 마음에 드는 하나를 골라요. 모든 선택이 나만의 작품에 들어갑니다.</p><div class="choices">'+opts.map((v,k)=>'<button type="button" class="choice" data-field="'+k+'"><span class="choiceIcon">'+['🌟','💜','🚀'][k]+'</span> '+esc(v)+'</button>').join('')+'</div>';
+ }else if(p==='studio'){
+  const title=PRODUCTS[active][1],chosen=fieldExamples[active].map((opts,i)=>opts[picks['field'+i]||0]);
+  html+='<div class="roundTitle">✏️ 나만의 작품 만들기 · 최종 실습</div><h3 class="question">내 생각을 한 문장으로 추가해 볼까요?</h3>';
+  html+='<p class="minor">'+(classroom.grade==='low'?'말로 생각해 보고 선생님의 도움을 받아 입력하거나, 그냥 완성해도 좋아요.':classroom.grade==='high'?'AI에 도움을 부탁한 뒤 내가 확인할 내용과 보완할 점을 써 보세요.':'선택한 내용을 보고 나의 생각을 더해 보세요.')+'</p>';
+  html+='<div class="studioPreview"><h3>'+esc(title)+'</h3>'+chosen.map((v,i)=>'<p><b>'+esc(PRODUCTS[active][i+2])+'</b> '+esc(v)+'</p>').join('')+'</div>';
+  html+='<label for="studentIdea">나만의 아이디어 (선택, 최대 200자)</label><textarea id="studentIdea" rows="4" maxlength="200" placeholder="예: 저는 친구가 AI의 답을 그대로 믿지 않도록 알려주고 싶어요.">'+esc(picks.studentIdea||'')+'</textarea>';
+  html+='<button type="button" class="cta" data-action="finishStudio">✅ 내 작품 완성하기</button>';
  }else{
   const report=done||createReport(active,picks,fieldExamples[active].map((opts,i)=>opts[picks['field'+i]||0]));
+  if(!done&&picks.studentIdea)report.sections.push({label:'내가 직접 작성한 생각',value:String(picks.studentIdea).slice(0,200)});
   html+='<div class="roundTitle">'+(done?'✅ 완료한 챕터':'🏆 완성한 작품')+'</div><div class="report"><div class="reportStamp">'+PRODUCTS[active][0]+'</div><h2>'+esc(report.title)+'</h2><p>탐험가: '+esc(student.name)+'</p>'+report.sections.map(x=>'<div class="reportPart"><b>'+esc(x.label)+'</b><span>'+esc(x.value)+'</span></div>').join('')+'</div>';
   html+=done?'<button class="cta" data-action="download">🖼️ 내 결과물 PNG 저장</button><button class="secondaryAction" data-action="home">🗺️ 탐험 지도로 돌아가기</button>':'<button class="cta" data-action="save">💾 내 작품 저장하고 미션 완료</button>';
  }
@@ -94,7 +103,7 @@ function paintGame(){
 }
 root.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{const v=Number(b.dataset.q),i=Number(p.split(':')[1]);picks['q'+i]=v;playSound(v===data.q[i][3]?'correct':'wrong');if(v===data.q[i][3])persistDraft();paintGame()});
  root.querySelectorAll('[data-field]').forEach(b=>b.onclick=()=>{const i=Number(p.split(':')[1]);picks['field'+i]=Number(b.dataset.field);persistDraft();playSound('correct');paintGame()});
- root.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const k=b.dataset.action;if(k==='save')saveCompleted();else if(k==='download')downloadReport(done);else paintHome()});
+ root.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const k=b.dataset.action;if(k==='finishStudio'){picks.studentIdea=($('studentIdea')?.value||'').trim().slice(0,200);picks.studioDone=true;persistDraft();playSound('success');paintGame()}else if(k==='save')saveCompleted();else if(k==='download')downloadReport(done);else paintHome()});
 }
 
 function reward(text){
@@ -185,6 +194,7 @@ async function saveCompleted(){
  if(busy||!student)return;busy=true;
  const btn=$('gameContent').querySelector('[data-action="save"]');if(btn)btn.disabled=true;
  const report=createReport(active,picks,fieldExamples[active].map((opts,i)=>opts[picks['field'+i]||0]));
+ if(picks.studentIdea)report.sections.push({label:'내가 직접 작성한 생각',value:String(picks.studentIdea).slice(0,200)});
  await flushDraft();
  const record={...(student.answers?.aiLiteracyV16||{}),completed:{...results(),[String(active+1)]:report}};
  const doc={...(student.answers||{}),aiLiteracyV16:record};
