@@ -380,3 +380,18 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 @media(max-width:850px){.microStack{grid-template-columns:1fr}.microChoice{min-height:80px}.editorGrid{grid-template-columns:1fr}}
 @media(max-width:650px){body[data-page="homePage"] .hero{padding:14px 15px}body[data-page="homePage"] .hero h1{font-size:30px}body[data-page="homePage"] .heroArt{width:70px;min-width:60px}.microGrid{grid-template-columns:1fr}.microChoice{min-height:75px}.microScene{min-height:100px}.codeRow{flex-wrap:wrap}.codeRow button{min-height:40px}.portfolioItem{grid-template-columns:40px minmax(0,1fr)}.portfolioItem button{grid-column:2}.portfolioEmoji{font-size:32px}.playTop{gap:7px}.playTop .secondaryAction{font-size:12px;padding:7px 9px}}
 @media(prefers-reduced-motion:reduce){.rewardAnimate{animation:none}}
+
+/* One clear learning explanation after each question */
+.explanation{border:2px solid #a4dfc6;background:linear-gradient(140deg,#effff6,#e8f6ff);border-radius:22px;padding:20px;margin:22px 0 24px;color:#1c5961;line-height:1.75;box-shadow:0 7px 0 #9bcaba50}
+.explanation strong{font-size:clamp(19px,2.3vw,25px);color:#185b48}
+.explanation p{font-size:clamp(17px,1.8vw,20px);margin:12px 0 0}
+.studioPreview{border-radius:20px;border:2px solid #d7d2f4;padding:18px;background:linear-gradient(145deg,#fff,#f0edff);box-shadow:0 8px 0 #b6a7df56;margin:20px 0}
+.studioPreview h3{margin:0 0 13px;color:#4a4091;font-size:21px}
+.studioPreview p{line-height:1.7;font-size:15px;padding:7px 0;border-bottom:1px solid #ded8f4}
+.studioPreview b{margin-right:8px;color:#584b9f}
+#studentIdea{width:100%;min-height:115px;border-radius:17px;border:2px solid #d3d9f5;padding:14px;resize:vertical;font:inherit;font-size:16px;color:#20366f;background:#fff}
+#studentIdea:focus{outline:3px solid #f0a42b;outline-offset:2px}
+.lessonTimer{border:1px solid #cbdbee;border-radius:22px;background:linear-gradient(140deg,#f6fbff,#f3f0ff);padding:20px;margin:20px 0;box-shadow:0 7px 0 #a5abd73b}
+.lessonTimer h3{margin:0 0 5px}.timerRow{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.timerRow strong{font-size:clamp(24px,2.6vw,32px);color:#384090;min-width:240px}
+@media(max-width:650px){.explanation{padding:15px}.explanation strong{font-size:19px}.explanation p{font-size:16px}.lessonTimer{padding:14px}.timerRow strong{width:100%;min-width:0}}
