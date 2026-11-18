@@ -14,7 +14,7 @@ export async function connect(){
     import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js')
   ]);
   app=core.initializeApp(firebaseConfig);auth=A.getAuth(app);db=F.getFirestore(app);sdk={A,F};
-  await A.authStateReady(auth);
+  await auth.authStateReady();
 }
 async function anonymous(){if(auth.currentUser && auth.currentUser.isAnonymous)return auth.currentUser;if(auth.currentUser)await sdk.A.signOut(auth);return (await sdk.A.signInAnonymously(auth)).user}
 function demoKey(s){return 'students:'+s}
