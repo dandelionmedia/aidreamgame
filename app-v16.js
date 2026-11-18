@@ -101,7 +101,7 @@ function paintGame(){
  const game=renderMini(active,i,state,{onChange:updated=>{picks['mini'+i]=updated;persistDraft();paintGame()},onFinish:()=>{picks['mini'+i]={...state,done:true};persistDraft();playSound('success');reward('미니 게임 성공!');paintGame()},onSound:playSound});
  root.querySelectorAll('[data-mini]').forEach(b=>b.onclick=()=>game.apply(b.dataset.mini));
 }
-root.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{const v=Number(b.dataset.q),i=Number(p.split(':')[1]);picks['q'+i]=v;playSound(v===data.q[i][3]?'correct':'wrong');if(v===data.q[i][3])persistDraft();paintGame()});
+root.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{const v=Number(b.dataset.q),i=Number(p.split(':')[1]);picks['q'+i]=v;const correct=v===data.q[i][3];if(!correct){picks.misses={...(picks.misses||{}),['q'+i]:(picks.misses?.['q'+i]||0)+1}}playSound(correct?'correct':'wrong');persistDraft();paintGame()});
  root.querySelectorAll('[data-field]').forEach(b=>b.onclick=()=>{const i=Number(p.split(':')[1]);picks['field'+i]=Number(b.dataset.field);persistDraft();playSound('correct');paintGame()});
  root.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const k=b.dataset.action;if(k==='finishStudio'){picks.studentIdea=($('studentIdea')?.value||'').trim().slice(0,200);picks.studioDone=true;persistDraft();playSound('success');paintGame()}else if(k==='save')saveCompleted();else if(k==='download')downloadReport(done);else paintHome()});
 }
@@ -207,7 +207,7 @@ async function saveCompleted(){
 function drawPicture(name,title,lines){
  const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=1700;const g=canvas.getContext('2d');if(!g)throw Error('이미지 저장을 지원하지 않는 기기예요.');
  const grad=g.createLinearGradient(0,0,1200,1700);grad.addColorStop(0,'#1a2865');grad.addColorStop(1,'#7e63ea');g.fillStyle=grad;g.fillRect(0,0,1200,1700);
- g.fillStyle='#fff';g.beginPath();g.roundRect(56,65,1088,1565,35);g.fill();g.textBaseline='top';g.fillStyle='#6652c8';g.font='bold 30px sans-serif';g.fillText('AI LITERACY · 유쌤클래스',102,115);
+ g.fillStyle='#fff';g.beginPath();if(typeof g.roundRect==='function'){g.roundRect(56,65,1088,1565,35)}else{g.rect(56,65,1088,1565)}g.fill();g.textBaseline='top';g.fillStyle='#6652c8';g.font='bold 30px sans-serif';g.fillText('AI LITERACY · 유쌤클래스',102,115);
  g.fillStyle='#23326f';g.font='bold 50px sans-serif';g.fillText(title.slice(0,19),102,188);
  g.font='bold 33px sans-serif';g.fillText('탐험가: '+name.slice(0,14),102,277);
  let y=375;
@@ -225,7 +225,7 @@ function drawPicture(name,title,lines){
  const link=document.createElement('a');link.href=canvas.toDataURL('image/png');link.download='AI리터러시_'+title.replace(/[^가-힣a-zA-Z0-9]/g,'').slice(0,16)+'.png';document.body.append(link);link.click();link.remove();
 }
 function downloadReport(report){try{drawPicture(student.name,report.title,report.sections.map(x=>[x.label,x.value]));playSound('success')}catch(err){toast(err.message)}}
-function downloadCertificate(){try{drawPicture(student.name,'AI 리터러시 마스터 수료증',[['교육과정','기초 5개 · 핵심 활용 5개 · 심화 5개'],['완성 미션','15개 챕터의 총 270개 학습 활동'],['나의 약속','AI의 답변을 확인하고 사람의 책임을 지켜요.']]);playSound('success')}catch(e){toast(e.message)}}
+function downloadCertificate(){try{drawPicture(student.name,'AI 리터러시 마스터 수료증',[['교육과정','기초 5개 · 핵심 활용 5개 · 심화 5개'],['완성 미션','15개 챕터의 총 285개 학습 활동'],['나의 약속','AI의 답변을 확인하고 사람의 책임을 지켜요.']]);playSound('success')}catch(e){toast(e.message)}}
 async function init(){
  verifyCourseData();
  session=todaySession();show('joinPage');$('join').disabled=true;$('studentName').disabled=true;
@@ -278,7 +278,7 @@ function watchTeacher(){
 }
 function drawTeacher(rows){
  const total=rows.length,records=rows.map(x=>({student:x,completed:x.answers?.aiLiteracyV16?.completed||{}}));
- $('teacherStats').innerHTML='<div class="teacherMetric"><strong>'+total+'</strong><span>등록 학생</span></div><div class="teacherMetric"><strong>'+records.filter(x=>Object.keys(x.completed).length===15).length+'</strong><span>전체 완주 학생</span></div><div class="teacherMetric"><strong>'+records.reduce((n,x)=>n+Object.keys(x.completed).length,0)+'</strong><span>완료한 챕터 총합</span></div>';
+ $('teacherStats').innerHTML='<div class="teacherMetric"><strong>'+total+'</strong><span>등록 학생</span></div><div class="teacherMetric"><strong>'+records.filter(x=>Object.keys(x.completed).length===15).length+'</strong><span>전체 완주 학생</span></div><div class="teacherMetric"><strong>'+records.reduce((n,x)=>n+Object.keys(x.completed).length,0)+'</strong><span>완료한 챕터 총합</span></div><div class="teacherMetric"><strong>'+records.reduce((n,x)=>n+Object.values(x.student.answers?.aiLiteracyV16?.drafts||{}).reduce((m,d)=>m+Object.values(d.misses||{}).reduce((q,v)=>q+Number(v||0),0),0),0)+'</strong><span>현재 기록된 오답 시도</span></div>';
  $('teacherLevels').innerHTML=COURSES.map((c,i)=>{const n=records.filter(x=>x.completed[String(i+1)]?.title).length;return '<div class="teacherLevel"><span>'+c.icon+' '+esc(c.title)+'</span><strong>'+n+'명</strong><div class="tinyBar"><span style="width:'+(total?n/total*100:0)+'%"></span></div></div>'}).join('');
  $('teacherStudents').innerHTML=rows.slice().sort((a,b)=>Object.keys(b.answers?.aiLiteracyV16?.completed||{}).length-Object.keys(a.answers?.aiLiteracyV16?.completed||{}).length).map(x=>'<div class="teacherStudent"><strong>'+esc(x.name)+'</strong><span>새 교육과정 '+Object.keys(x.answers?.aiLiteracyV16?.completed||{}).length+' / 15 · '+positionOf(x)+'</span><button class="danger" type="button" data-delete="'+esc(x.id)+'" data-name="'+esc(x.name)+'">이 학생 삭제</button></div>').join('')||'<p>등록한 학생이 없습니다.</p>';
  $('teacherStudents').querySelectorAll('[data-delete]').forEach(b=>b.onclick=async()=>{
