@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Firebase 콘솔 > Authentication > 사용자 > 선생님 계정 UID로 변경해야 합니다.
+    function teacher() {return request.auth != null && request.auth.uid == 'sEKlcYludQOKQ6JjcXGDOeUpUrq1';}
+    function isSession(s) {return s in ['1119','1120','1125'];}
+    function validCode(s) {return s.matches('[A-Z0-9]{4,8}');}
+    function configured(s) {return validCode(s) && exists(/databases/$(database)/documents/sessions/$(s)/settings/literacy);}
+    function openClass(s) {return configured(s) && get(/databases/$(database)/documents/sessions/$(s)/settings/literacy).data.active == true;}
+    function own(uid) {return request.auth != null && request.auth.uid == uid && request.auth.token.firebase.sign_in_provider == 'anonymous';}
+    // 학생 명단과 개인 답변은 다른 학생에게 노출하지 않습니다.
+    match /sessions/{session}/students/{uid} {
+      allow get: if teacher() || own(uid);
+      allow list: if teacher();
+      allow create: if (isSession(session) || openClass(session)) && own(uid)
+        && request.resource.data.keys().hasOnly(['name','step','answers','joinedAt','updatedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 14
+        && request.resource.data.step == 0 && request.resource.data.answers == {}
+        && request.resource.data.joinedAt == request.time && request.resource.data.updatedAt == request.time
+        && (openClass(session)
+          || (session == '1119' && request.time >= timestamp.value('2026-11-18T15:00:00Z') && request.time < timestamp.value('2026-11-19T15:00:00Z'))
+          || (session == '1120' && request.time >= timestamp.value('2026-11-19T15:00:00Z') && request.time < timestamp.value('2026-11-20T15:00:00Z'))
+          || (session == '1125' && request.time >= timestamp.value('2026-11-24T15:00:00Z') && request.time < timestamp.value('2026-11-25T15:00:00Z')));
+      allow update: if own(uid)
+        && request.resource.data.keys().hasOnly(['name','step','answers','joinedAt','updatedAt'])
+        && request.resource.data.name == resource.data.name
+        && request.resource.data.joinedAt == resource.data.joinedAt
+        && request.resource.data.step is int
+        && request.resource.data.step >= resource.data.step
+        && request.resource.data.step <= resource.data.step + 1
+        && request.resource.data.step <= 8
+        && request.resource.data.answers is map
+        // V16 students can checkpoint only in an active, unpaused classroom.
+        && (!configured(session) || (get(/databases/$(database)/documents/sessions/$(session)/settings/literacy).data.active == true
+            && get(/databases/$(database)/documents/sessions/$(session)/settings/literacy).data.paused == false
+            && (!('aiLiteracyV16' in request.resource.data.answers)
+                || !('completed' in request.resource.data.answers.aiLiteracyV16)
+                || request.resource.data.answers.aiLiteracyV16.completed.keys().size() <= get(/databases/$(database)/documents/sessions/$(session)/settings/literacy).data.unlocked)))
+        && request.resource.data.updatedAt == request.time
+        // 강사가 공개한 게임 단계까지만 진행 (설정 문서가 없으면 기존 방식 허용)
+        && (!exists(/databases/$(database)/documents/sessions/$(session)/settings/classroom)
+            || request.resource.data.step == resource.data.step
+            || request.resource.data.step <= get(/databases/$(database)/documents/sessions/$(session)/settings/classroom).data.unlocked);
+      // V7: 강사용 Firebase UID만 학생 문서 삭제 가능. 다른 학생 및 익명 사용자 삭제 불가.
+      allow delete: if teacher();
+    }
+    // V6: 강사 진행 제어 (학생은 상태만 읽고, 강사만 변경)
+    match /sessions/{session}/settings/classroom {
+      allow get: if isSession(session) && request.auth != null;
+      allow list: if false;
+      allow create, update: if isSession(session) && teacher()
+        && request.resource.data.keys().hasOnly(['unlocked','paused','updatedAt'])
+        && request.resource.data.unlocked is int
+        && request.resource.data.unlocked >= 1
+        && request.resource.data.unlocked <= 8
+        && request.resource.data.paused is bool
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+    // V16: independently controlled literacy classroom settings (class code is the session document ID).
+    match /sessions/{session}/settings/literacy {
+      allow get: if validCode(session) && request.auth != null;
+      allow list: if false;
+      allow create, update: if validCode(session) && teacher()
+        && request.resource.data.keys().hasOnly(['school','date','unlocked','paused','active','grade','updatedAt'])
+        && request.resource.data.school is string
+        && request.resource.data.school.size() >= 1 && request.resource.data.school.size() <= 60
+        && request.resource.data.date is string
+        && request.resource.data.date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && request.resource.data.unlocked is int
+        && request.resource.data.unlocked >= 1 && request.resource.data.unlocked <= 15
+        && request.resource.data.paused is bool && request.resource.data.active is bool
+        && request.resource.data.grade in ['low','mid','high','all']
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if validCode(session) && teacher() && !isSession(session);
+    }
+    match /{document=**} {allow read, write: if false;}
+  }
+}
