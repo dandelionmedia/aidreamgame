@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1b276b"><title>AI 리터러시 탐험학교 V17 | 유쌤클래스</title>
+<link rel="stylesheet" href="style-v17.css?v=20261119-v17"></head>
+<body><div class="backdrop" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="app">
+<header class="topbar"><a class="brand" href="./" aria-label="처음으로"><span class="brandIcon">✦</span><span>유쌤클래스<small>AI LITERACY ACADEMY</small></span></a><div class="navright"><span id="connection" class="connection">연결 확인 중</span><button type="button" class="utility" id="contrast" aria-label="고대비 모드 켜기 또는 끄기">◐ 고대비</button><button type="button" class="utility" id="sound">🔇 효과음 꺼짐</button><button class="utility" id="teacherOpen" type="button">👩‍🏫 선생님</button></div></header>
+<section class="hero"><div class="heroText"><div class="eyebrow">🎮 LEARN · PLAY · CREATE</div><h1>AI 리터러시<br><em>탐험학교!</em></h1><p>AI가 무엇인지 배우고, 재미있는 게임으로 연습하고,<br>나만의 AI 창작 작품을 완성해요.</p><div class="pills"><span>🌱 기초 5챕터</span><span>🚀 활용 5챕터</span><span>🏆 심화 5챕터</span></div></div><div class="heroArt" aria-hidden="true"><div class="orb">🌍</div><div class="rocket">🚀</div><span>✨</span><span>⭐</span></div></section>
+<p id="alert" class="alert hidden" role="alert"></p>
+<main>
+<section id="joinPage" class="screen"><div class="paper joinPanel"><div class="sectionHead"><span class="bubble">👋</span><div><small>STEP 00 · 탐험 준비</small><h2>반가워요, AI 탐험가!</h2></div></div>
+<div class="classJoin"><label for="classCode">🏫 교육기관 수업 코드</label><div class="codeRow"><input id="classCode" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="예: 1119 또는 교사가 만든 코드"><button type="button" id="classCheck" class="secondaryAction">수업 확인</button></div><p class="hint">수업 코드를 선생님께 받아 입력해 주세요. 새로운 교육 날짜에도 사용할 수 있어요.</p></div>
+<div id="schoolName" class="school">오늘의 교실을 확인하고 있어요...</div>
+<p id="classStatus" class="hint" aria-live="polite"></p>
+<label for="studentName">나의 별명</label><input id="studentName" maxlength="14" autocomplete="off" placeholder="예: 반짝토끼"><p class="hint">실명이나 전화번호 대신 친구들이 불러줄 별명을 사용해요.</p>
+<button id="join" type="button" class="cta">🚀 AI 탐험 시작하기 <span>→</span></button>
+<div class="hidden" id="demoSelect"><label for="demoSchool">🧪 연습용 교육일 선택</label><select id="demoSchool"><option value="1119">11월 19일 마장아이꿈누리터</option><option value="1120">11월 20일 서울금북초등학교</option><option value="1125">11월 25일 서울행현초등학교</option></select></div>
+</div></section>
+<section id="homePage" class="screen hidden"><div class="paper profile"><div class="sectionHead"><span class="bubble">🌟</span><div class="grow"><small id="homeSchool"></small><h2 id="welcome">나의 AI 탐험</h2></div><button type="button" id="portfolioOpen" class="secondaryAction">🗃️ 내 작품함</button><button type="button" id="switchStudent" class="secondaryAction">다른 탐험가</button></div>
+<div class="progressTop"><strong>탐험 진행률</strong><span id="studentGrade" class="stepTag">전체 학년</span></div><p id="pausedNotice" class="alert hidden">⏸ 선생님이 수업을 일시정지했습니다. 진행 안내를 확인해 주세요.</p><div class="progressTop"><strong>전체 진도</strong><span id="progressLabel">0 / 15 챕터 완료</span></div><div class="bigProgress"><span id="progressFill"></span></div><p class="hint">각 챕터의 이해 문제 10개·터치형 미니게임 5개·창작 활동 4개를 완료하면 다음 챕터가 열려요.</p></div>
+<div class="curriculumTitle"><h2>🗺️ 나의 AI 리터러시 탐험 지도</h2><p>기초부터 심화까지, 문제·미니게임·창작을 차례대로 도전해요!</p></div><div id="tierGrid"></div>
+<section class="bonusWelcome"><div><h3>🌟 빠른 탐험가의 보너스 미션</h3><p>오늘의 활동을 먼저 마쳤다면 분류·순서·기억력 게임 3개에 도전해 보세요.</p></div><button id="bonusOpen" class="secondaryAction" type="button">🎮 보너스 게임존</button></section>
+<div id="finishedBadge" class="paper finish hidden"></div></section>
+<section id="gamePage" class="screen hidden"><div class="paper gamePanel"><div class="playTop"><button class="secondaryAction" type="button" id="returnHome">← 탐험 지도</button><button type="button" id="readQuestion" class="secondaryAction">🔊 문제 읽기</button><span id="gamePosition" class="stepTag">MISSION 01 / 15</span></div><div id="gameContent"></div><p id="saveInfo" class="hint" aria-live="polite"></p></div></section>
+<section id="teacherPage" class="screen hidden"><div class="paper admin"><div class="sectionHead"><span class="bubble">📊</span><div class="grow"><small>TEACHER DASHBOARD</small><h2>AI 리터러시 강사 현황판</h2></div><button type="button" id="teacherClose" class="secondaryAction">학생 화면</button></div>
+<div id="teacherForm"><p class="hint">Firebase에 등록된 강사 계정으로 로그인합니다. 학생별 기록은 허가된 강사만 볼 수 있습니다.</p><label for="teacherEmail">강사 이메일</label><input id="teacherEmail" type="email" autocomplete="username" placeholder="강사 이메일"><label for="teacherPassword">비밀번호</label><input id="teacherPassword" type="password" autocomplete="current-password" placeholder="비밀번호"><button id="loginTeacher" type="button" class="cta">🔐 관리자 로그인</button></div>
+<div id="teacherDashboard" class="hidden"><div class="adminTop"><label for="sessionTeacher">수업 코드 입력 <input id="sessionTeacher" maxlength="8" placeholder="1119 또는 새 코드"></label><button type="button" id="teacherRefresh" class="secondaryAction">🔄 조회하기</button><button type="button" class="secondaryAction" id="logoutTeacher">로그아웃</button></div>
+<section class="classroomEditor"><h3>🎛️ 교실 운영 설정</h3><p id="classLiveStatus" class="hint">수업 설정 확인 중</p>
+<div class="editorGrid"><label>교육기관명<input id="classSchool" maxlength="60" placeholder="예: ○○초등학교"></label><label>교육 날짜<input id="classDate" type="date"></label>
+<label>공개된 챕터<select id="classUnlock"><option value="1">1장까지 공개</option><option value="2">2장까지 공개</option><option value="3">3장까지 공개</option><option value="4">4장까지 공개</option><option value="5">5장까지 공개</option><option value="6">6장까지 공개</option><option value="7">7장까지 공개</option><option value="8">8장까지 공개</option><option value="9">9장까지 공개</option><option value="10">10장까지 공개</option><option value="11">11장까지 공개</option><option value="12">12장까지 공개</option><option value="13">13장까지 공개</option><option value="14">14장까지 공개</option><option value="15">15장까지 공개</option></select></label>
+<label>학년별 안내<select id="classGrade"><option value="all">전체 학년</option><option value="low">1~2학년</option><option value="mid">3~4학년</option><option value="high">5~6학년</option></select></label></div>
+<div class="settingToggles"><label><input type="checkbox" id="classPaused"> ⏸ 학생 진행 일시정지</label><label><input type="checkbox" id="classActive" checked> ✅ 학생 접속 허용</label></div>
+<button type="button" class="cta" id="saveTeacherClass">💾 수업 설정 저장 · 실시간 적용</button><p class="hint">새 수업은 영문·숫자 4~8자리 코드를 입력하고 설정을 저장하면 생성됩니다. 학생은 동일한 코드로 입장합니다.</p></section>
+<section class="lessonTimer"><h3>⏱️ 90분 수업 운영 타이머</h3><p class="hint">QR 입장 및 안내 10분 → 핵심 학습 60분 → 창작·발표 20분을 기준으로 운영할 수 있습니다.</p>
+<div class="timerRow"><strong id="timerDisplay">00:00 / 90:00</strong><button class="secondaryAction" id="timerStart" type="button">▶ 시작</button><button class="secondaryAction" id="timerPause" type="button">⏸ 멈춤</button><button class="secondaryAction" id="timerReset" type="button">↺ 초기화</button></div></section>
+<h3>📈 새 교육과정 학습 현황</h3><div id="teacherStats" class="stats"></div><h3>🎯 챕터별 완료 인원</h3><div id="teacherLevels" class="teacherLevels"></div><h3>👦 학생 명단과 진도</h3><p class="hint">기존 교육과정 기록은 새 진도에 포함되지 않습니다.</p><div id="teacherStudents" class="teacherStudents"></div>
+<div class="dangerPanel"><h3>🧹 학생 기록 정리</h3><p>개별 삭제와 수업 전체 초기화는 실제 Firebase 기록을 지웁니다. 삭제한 기록은 복구할 수 없습니다.</p><button type="button" id="clearClass" class="danger">🗑️ 선택한 수업의 학생 기록 전체 초기화</button></div></div>
+</div></section>
+<section id="bonusPage" class="screen hidden"><div class="paper"><div class="sectionHead"><span class="bubble">🎲</span><div class="grow"><small>OPTIONAL CLASSROOM MISSIONS</small><h2>보너스 AI 탐험관</h2><p id="bonusProgress" class="hint">0 / 3개 보너스 완료</p></div><button class="secondaryAction" id="bonusClose" type="button">← 탐험 지도</button></div><div id="bonusContent"></div></div></section>
+<section id="portfolioPage" class="screen hidden"><div class="paper"><div class="sectionHead"><span class="bubble">🗃️</span><div class="grow"><small>MY WORK</small><h2>나의 AI 작품 보관함</h2></div><button type="button" id="portfolioClose" class="secondaryAction">← 탐험 지도</button></div><p class="hint">완성한 챕터의 작품을 확인하고 PNG로 저장해 보세요.</p><div id="portfolioItems"></div></div></section>
+</main><footer>AI콘텐츠마케팅연구소 유쌤클래스 · 배우고 실행하는 AI<br>저학년부터 고학년까지 단계별 학습 · 모든 게임은 교육용 선택형 시뮬레이션</footer></div>
+<div class="toast hidden" id="toast" role="status" aria-live="polite"></div><div id="reward" class="reward hidden" role="status" aria-live="polite"></div>
+<script type="module" src="app-v17.js?v=20261119-v17"></script></body></html>
