@@ -3,7 +3,7 @@ const SESSIONS={1119:{date:'2026-11-19',label:'11월 19일',school:'마장아이
 const GAMES=[['🤖','AI 탐정 게임','AI가 사용되는 곳을 찾아요'],['🧐','AI 말이 진짜일까?','확인하는 습관을 배워요'],['🎁','AI 마법 상자','글·그림·영상·소리를 맞혀요'],['🌈','나의 꿈 찾기','좋아하는 꿈을 골라요'],['📖','이야기 제목 뽑기','나만의 이야기를 만들어요'],['🎨','나만의 주인공 꾸미기','꿈속 캐릭터를 꾸며요'],['🧩','이야기 6장면 퍼즐','장면을 순서대로 연결해요'],['🎬','나의 꿈 영화관','나의 작품을 감상해요']];
 const $=id=>document.getElementById(id), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const localKey=s=>'dream-v4-active:'+s;
-let session='',student=null,current=0,temp={},busy=false,unwatch=null,teacherActive=false,slideTimer=null;
+let session='',student=null,current=0,temp={},busy=false,unwatch=null,teacherActive=false,slideTimer=null,unwatchControl=null,studentControl=null,classroom={unlocked:8,paused:false,configured:false};
 function kstDate(){const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());let x={};parts.forEach(p=>x[p.type]=p.value);return `${x.year}-${x.month}-${x.day}`}
 function activeDay(){return Object.keys(SESSIONS).find(k=>SESSIONS[k].date===kstDate())||''}
 function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.add('hidden'),3900)}
@@ -35,7 +35,7 @@ async function init(){
       if(saved){
         try{
           student=await api.restoreStudent(session,saved);
-          if(student){lobby();return;}
+          if(student){attachStudentControl();lobby();return;}
           localStorage.removeItem(localKey(session));
         }catch(e){toast('기존 기록 복원에 실패했어요. 새로 등록해 주세요.')}
       }
@@ -51,13 +51,13 @@ async function init(){
   }
 }
 async function join(){if(busy)return;const s=SESSIONS[session];if(!s)return toast('오늘 진행할 수업이 없습니다.');const name=$('nickname').value.trim().replace(/[<>\\]/g,'').slice(0,14);if(!name)return toast('별명을 입력해 주세요.');busy=true;$('joinBtn').disabled=true;
- try{student=await api.registerStudent(session,name);localStorage.setItem(localKey(session),student.id);lobby();toast('✨ 등록 성공! 꿈 탐험 시작!')}catch(e){toast('등록 실패: '+e.message)}finally{busy=false;$('joinBtn').disabled=!SESSIONS[session]}}
-async function anotherStudent(){if(!confirm('다른 학생으로 시작할까요? 기존 학생의 기록은 그대로 저장됩니다.'))return;try{await api.switchStudent();localStorage.removeItem(localKey(session));student=null;$('nickname').value='';show('entry')}catch(e){toast(e.message)}}
+ try{student=await api.registerStudent(session,name);localStorage.setItem(localKey(session),student.id);attachStudentControl();lobby();toast('✨ 등록 성공! 꿈 탐험 시작!')}catch(e){toast('등록 실패: '+e.message)}finally{busy=false;$('joinBtn').disabled=!SESSIONS[session]}}
+async function anotherStudent(){if(unwatchControl){unwatchControl();unwatchControl=null;}if(!confirm('다른 학생으로 시작할까요? 기존 학생의 기록은 그대로 저장됩니다.'))return;try{await api.switchStudent();localStorage.removeItem(localKey(session));student=null;$('nickname').value='';show('entry')}catch(e){toast(e.message)}}
 function lobby(){if(!student)return show('entry');clearInterval(slideTimer);show('lobby');$('lobbySchool').textContent=SESSIONS[session].school+' · '+SESSIONS[session].label;$('greeting').textContent=`${student.name}의 꿈 탐험`;$('xpFill').style.width=(student.step/8*100)+'%';$('xpLabel').textContent=`${student.step} / 8 미션`;
- $('missions').innerHTML=GAMES.map(([icon,title,desc],i)=>`<button type="button" data-open="${i+1}" ${i>student.step?'disabled':''} class="mission ${i<student.step?'done':''}"><span class="flag">${i<student.step?'✅':i===student.step?'🌟':'🔒'}</span><span class="emblem">${icon}</span><span class="number">MISSION ${String(i+1).padStart(2,'0')}</span><strong>${esc(title)}</strong><small>${i<student.step?'완료! 다시 체험 가능':i>student.step?'앞 미션을 먼저 완료해요':esc(desc)}</small></button>`).join('');$('missions').querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openGame(+b.dataset.open));
+ $('missions').innerHTML=GAMES.map(([icon,title,desc],i)=>`<button type="button" data-open="${i+1}" ${(i>student.step||i+1>classroom.unlocked||(classroom.paused&&i>=student.step))?'disabled':''} class="mission ${i<student.step?'done':''}"><span class="flag">${i<student.step?'✅':i===student.step?'🌟':'🔒'}</span><span class="emblem">${icon}</span><span class="number">MISSION ${String(i+1).padStart(2,'0')}</span><strong>${esc(title)}</strong><small>${i<student.step?'완료! 다시 체험 가능':i+1>classroom.unlocked?'선생님이 공개하면 시작해요':classroom.paused&&i>=student.step?'잠시 쉬는 시간이에요':i>student.step?'앞 미션을 먼저 완료해요':esc(desc)}</small></button>`).join('');$('missions').querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openGame(+b.dataset.open));
  $('award').classList.toggle('hidden',student.step<8);if(student.step>=8)$('award').innerHTML=`<div class="huge">🏆</div><h2>꿈 탐험 수료!</h2><p><strong>${esc(student.name)}</strong> 탐험가가 8개 미션을 모두 완성했어요!</p><button class="cta" id="watchAgain">🎬 나의 작품 다시 보기</button>`;
- if($('watchAgain'))$('watchAgain').onclick=()=>openGame(8)}
-function openGame(n){if(!student||n>student.step+1)return;current=n;temp=JSON.parse(JSON.stringify(student.answers?.[String(n)]||{}));show('play');$('playStep').textContent=`MISSION ${n} / 8`;renderGame()}
+ if($('watchAgain'))$('watchAgain').onclick=()=>openGame(8);renderBonus();}
+function openGame(n){if(!student||n>student.step+1||n>classroom.unlocked||(classroom.paused&&n>student.step)){toast('선생님이 다음 미션을 열어주면 시작해요!');return;}current=n;temp=JSON.parse(JSON.stringify(student.answers?.[String(n)]||{}));show('play');$('playStep').textContent=`MISSION ${n} / 8`;renderGame()}
 function options(id,items,single=false){return `<div class="options ${single?'single':''}">${items.map(([v,icon,label])=>`<button type="button" class="option ${temp[id]===v?'picked':''}" data-pick="${esc(id)}" data-value="${esc(v)}"><span class="emoji">${icon}</span>${esc(label)}</button>`).join('')}</div>`}
 function stage(title,intro,body){return `<h2 class="gameTitle">${title}</h2><p class="lead">${intro}</p>${body}`}
 function feedback(msg,style=''){return `<div class="feedback ${style}">${msg}</div>`}
@@ -85,17 +85,54 @@ function renderGame(){const ans=student.answers||{},dream=ans['4']?.dream||'나�
  if($('nextSlide'))$('nextSlide').onclick=()=>{temp.slide=((Number(temp.slide)||0)+1)%6;renderGame()};
  if($('autoSlide'))$('autoSlide').onclick=()=>{if(slideTimer){clearInterval(slideTimer);slideTimer=null}else{slideTimer=setInterval(()=>{temp.slide=((Number(temp.slide)||0)+1)%6;renderGame()},2300)}renderGame()};
 }
+
+function attachStudentControl(){
+ if(unwatchControl){unwatchControl();unwatchControl=null;}
+ if(!student||!session)return;
+ unwatchControl=api.watchClassroom(session,c=>{
+   const changed=c.unlocked!==classroom.unlocked||c.paused!==classroom.paused;
+   classroom=c;
+   if(changed&&$('lobby')&&!$('lobby').classList.contains('hidden'))lobby();
+ },e=>{
+   classroom={unlocked:8,paused:false,configured:false};
+   console.warn('수업 제어 규칙을 적용하면 단계 잠금이 활성화됩니다:',e.message);
+ });
+}
+const BONUS=[
+ ['🔍','우리 교실의 AI 발견하기','교실 안에서 AI가 쓰일 수 있는 물건을 떠올려 보고 선생님께 이야기해요.'],
+ ['🎭','캐릭터 목소리 연기','내 캐릭터가 인사한다면 어떤 목소리일지 친구에게 들려주세요.'],
+ ['🌈','꿈을 돕는 친구 찾기','친구에게 어떤 꿈을 가졌는지 물어보고, 응원 한마디를 전해요.'],
+ ['🎬','장면 표정 연습','내 이야기의 기쁨·놀람·용기 표정을 직접 표현해 보세요.'],
+ ['🧠','AI의 말 다시 확인하기','AI가 틀릴 수도 있는 예를 하나 생각하고 누구에게 확인할지 이야기해요.'],
+ ['🎨','주인공의 특별한 능력','나의 주인공에게 멋진 능력 하나를 만들어 주세요.']
+];
+function renderBonus(){
+ const el=$('bonusPanel');if(!el||!student)return;
+ const index=Number(sessionStorage.getItem('bonus-v6:'+session)||0)%BONUS.length;
+ const b=BONUS[index];el.innerHTML=`<div class="bonusTitle">🎁 빨리 끝난 친구의 보너스 탐험</div><p>다음 게임을 기다리는 동안 별도의 점수 경쟁 없이 활동해 보세요.</p><div class="bonusCard"><strong>${b[0]} ${b[1]}</strong><p>${b[2]}</p></div><button type="button" class="mini" id="nextBonus">다른 보너스 활동 보기 ↻</button>`;
+ $('nextBonus').onclick=()=>{sessionStorage.setItem('bonus-v6:'+session,String(index+1));renderBonus()};
+}
+async function saveClassroom(){
+ const key=$('teacherSession').value,unlocked=Number($('unlockStage').value),paused=$('pauseClass').checked,btn=$('saveClassroom');
+ btn.disabled=true;
+ try{await api.setClassroom(key,unlocked,paused);$('classStatus').textContent=`저장 완료! ${unlocked}번까지 공개${paused?' · 일시정지':''}`;toast('강사 진행 설정을 저장했습니다.');}
+ catch(e){$('classStatus').textContent='저장 실패: '+e.message;toast('보안 규칙을 확인해 주세요.');}
+ finally{btn.disabled=false}
+}
+function resetFirstStage(){$('unlockStage').value='1';$('pauseClass').checked=false;saveClassroom()}
+
 function party(){const c=$('confetti');c.innerHTML='';for(let i=0;i<25;i++){const s=document.createElement('span');s.textContent=['⭐','✨','🎉','💜','🌈'][i%5];s.style.left=(Math.random()*100)+'%';s.style.animationDelay=(Math.random()*.65)+'s';s.style.fontSize=(14+Math.random()*18)+'px';c.append(s)}setTimeout(()=>c.innerHTML='',2600)}
 async function completeGame(){if(busy)return;busy=true;const btn=$('finish');if(btn)btn.disabled=true;const result={...temp};delete result.idx;delete result.slide;const answers={...(student.answers||{}),[String(current)]:result};const next=Math.max(current,student.step);
  try{await api.saveStudent(session,student.id,next,answers);student={...student,step:next,answers};clearInterval(slideTimer);slideTimer=null;party();lobby();toast('🎉 미션 완료! 잘했어요!')}catch(e){toast('저장 실패: '+e.message);if(btn)btn.disabled=false}finally{busy=false}}
 function startTeacher(){clearInterval(slideTimer);slideTimer=null;show('teacher')}
 async function teacherLogin(){try{$('teacherLogin').disabled=true;await api.teacherLogin($('teacherEmail').value.trim(),$('teacherPassword').value);teacherActive=true;$('teacherAuth').classList.add('hidden');$('teacherContent').classList.remove('hidden');$('teacherSession').value=session||'1119';watch()}catch(e){toast('현황판 접속 실패: '+e.message)}finally{$('teacherLogin').disabled=false}}
-function watch(){if(unwatch){unwatch();unwatch=null}const key=$('teacherSession').value;unwatch=api.watchStudents(key,students=>drawTeacher(key,students),e=>toast('조회 오류: '+e.message))}
+function watch(){if(unwatch){unwatch();unwatch=null}if(studentControl){studentControl();studentControl=null}const key=$('teacherSession').value;unwatch=api.watchStudents(key,students=>drawTeacher(key,students),e=>toast('조회 오류: '+e.message));studentControl=api.watchClassroom(key,c=>{const sel=$('unlockStage');if(sel)sel.value=String(c.unlocked);const p=$('pauseClass');if(p)p.checked=c.paused;const status=$('classStatus');if(status)status.textContent=c.configured?'실시간 수업 제어 활성화':'제어 데이터가 아직 없습니다. [1단계부터 진행]을 누르세요.';},e=>{$('classStatus').textContent='수업 제어 권한을 확인하세요: '+e.message})}
 function drawTeacher(key,students){const s=SESSIONS[key];const total=students.length;const done=students.filter(x=>x.step>=8).length;$('stats').innerHTML=`<div class="stat"><strong>${total}</strong><span>등록 학생</span></div><div class="stat"><strong>${s.planned}</strong><span>준비 기준</span></div><div class="stat"><strong>${done}</strong><span>8단계 완료</span></div>`;
  $('stages').innerHTML=GAMES.map(([e,n],i)=>{const c=students.filter(x=>x.step>=i+1).length;return `<div class="barRow"><div class="barHeader"><span>${e} ${esc(n)}</span><span>${c}명</span></div><div class="bar"><div style="width:${total?c/total*100:0}%"></div></div></div>`}).join('');
  const d={};for(const x of students){let v=x.answers?.['4']?.dream;if(v)d[v]=(d[v]||0)+1}$('dreams').innerHTML=Object.entries(d).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span class="stepchip" style="display:inline-block;margin:4px">${esc(k)} ${v}명</span>`).join('')||'<p class="subtle">아직 꿈을 선택한 학생이 없어요.</p>';
  $('students').innerHTML=students.slice().sort((a,b)=>b.step-a.step).map(x=>`<div class="student"><div class="barHeader"><span>${esc(x.name)}</span><span>${Number(x.step)||0} / 8</span></div><div class="bar"><div style="width:${Math.min(100,Math.max(0,(Number(x.step)||0)/8*100))}%"></div></div><small class="subtle">${esc(x.answers?.['4']?.dream||'꿈 선택 전')} · ${esc(x.answers?.['5']?.title||'제목 선택 전')}</small></div>`).join('')||'<p class="subtle">아직 등록한 학생이 없어요.</p>';
 }
-async function teacherLogout(){if(unwatch){unwatch();unwatch=null}teacherActive=false;await api.teacherLogout();$('teacherAuth').classList.remove('hidden');$('teacherContent').classList.add('hidden');student=null;localStorage.removeItem(localKey(session));show('entry');toast('현황판에서 나왔습니다.')}
+async function teacherLogout(){if(unwatch){unwatch();unwatch=null}if(studentControl){studentControl();studentControl=null}teacherActive=false;await api.teacherLogout();$('teacherAuth').classList.remove('hidden');$('teacherContent').classList.add('hidden');student=null;localStorage.removeItem(localKey(session));show('entry');toast('현황판에서 나왔습니다.')}
 $('joinBtn').onclick=join;$('nickname').onkeydown=e=>{if(e.key==='Enter')join()};$('demoDay').onchange=()=>{chooseDay();show('entry')};$('newStudent').onclick=anotherStudent;$('back').onclick=()=>{clearInterval(slideTimer);slideTimer=null;lobby()};$('teacherLink').onclick=startTeacher;$('teacherBack').onclick=()=>{if(teacherActive){toast('현황판 종료 버튼을 눌러 로그아웃해 주세요.');return}show('entry')};$('teacherLogin').onclick=teacherLogin;$('teacherSession').onchange=watch;$('teacherLogout').onclick=teacherLogout;
+$('saveClassroom').onclick=saveClassroom;$('firstStage').onclick=resetFirstStage;
 init();
