@@ -14,9 +14,42 @@ function chooseDay(){session=api.live?activeDay():demoSession();let s=SESSIONS[s
   $('todayCard').classList.toggle('off',!s);$('todayCard').innerHTML=s?`<span class="dayicon">🏫</span><span>${esc(s.school)}<small>📅 ${s.label} · 준비 ${s.planned}명 · 추가 등록도 가능</small></span>`:'<span class="dayicon">🗓️</span><span>오늘 예정된 수업이 없어요.<small>교육 일정: 11월 19일 · 20일 · 25일</small></span>';
   if(!s&&api.live)note('수업이 없는 날에는 학생 신규 등록이 중단됩니다. 테스트는 데모 모드에서 먼저 진행하세요.');else note(api.live?'':'🧪 데모 모드: 이 기기 안에서만 결과가 저장됩니다. 여러 태블릿의 실시간 기록을 공유하려면 Firebase 설정이 필요합니다.');
 }
-async function init(){try{await api.connect();$('mode').textContent=api.live?'🟢 실시간 연결':'🧪 데모 모드';$('demoDayWrap').classList.toggle('hidden',api.live);$('teacherLoginInputs').classList.toggle('hidden',!api.live);$('demoDay').value=activeDay()||'1119';chooseDay();
-  if(session){const saved=localStorage.getItem(localKey(session));if(saved){try{student=await api.restoreStudent(session,saved);if(student){lobby();return}localStorage.removeItem(localKey(session))}catch(e){toast('기록을 복원할 수 없어요. 새로 등록해 주세요.')}}}
-  show('entry');}catch(e){$('mode').textContent='🔴 연결 오류';note('Firebase 연결에 실패했습니다: '+e.message+' · 설정을 확인해 주세요.',true);$('joinBtn').disabled=true;show('entry')}}
+async function init(){
+  // 교실 날짜는 Firebase 네트워크 요청과 별개로 즉시 표시합니다.
+  $('demoDay').value=activeDay()||'1119';
+  chooseDay();
+  $('joinBtn').disabled=true;
+  $('nickname').disabled=true;
+  show('entry');
+  try{
+    await Promise.race([
+      api.connect(),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('Firebase 연결 시간이 초과되었습니다. 네트워크와 인증 설정을 확인해 주세요.')),12000))
+    ]);
+    $('mode').textContent=api.live?'🟢 실시간 연결':'🧪 데모 모드';
+    $('demoDayWrap').classList.toggle('hidden',api.live);
+    $('teacherLoginInputs').classList.toggle('hidden',!api.live);
+    chooseDay();
+    if(session){
+      const saved=localStorage.getItem(localKey(session));
+      if(saved){
+        try{
+          student=await api.restoreStudent(session,saved);
+          if(student){lobby();return;}
+          localStorage.removeItem(localKey(session));
+        }catch(e){toast('기존 기록 복원에 실패했어요. 새로 등록해 주세요.')}
+      }
+    }
+    show('entry');
+  }catch(e){
+    $('mode').textContent='🔴 연결 오류';
+    note('Firebase 연결에 실패했습니다: '+e.message+' · 관리자에게 알려주세요.',true);
+    $('joinBtn').disabled=true;
+    $('nickname').disabled=true;
+    show('entry');
+    console.error('AI 게임 교실 Firebase 초기화 실패:',e);
+  }
+}
 async function join(){if(busy)return;const s=SESSIONS[session];if(!s)return toast('오늘 진행할 수업이 없습니다.');const name=$('nickname').value.trim().replace(/[<>\\]/g,'').slice(0,14);if(!name)return toast('별명을 입력해 주세요.');busy=true;$('joinBtn').disabled=true;
  try{student=await api.registerStudent(session,name);localStorage.setItem(localKey(session),student.id);lobby();toast('✨ 등록 성공! 꿈 탐험 시작!')}catch(e){toast('등록 실패: '+e.message)}finally{busy=false;$('joinBtn').disabled=!SESSIONS[session]}}
 async function anotherStudent(){if(!confirm('다른 학생으로 시작할까요? 기존 학생의 기록은 그대로 저장됩니다.'))return;try{await api.switchStudent();localStorage.removeItem(localKey(session));student=null;$('nickname').value='';show('entry')}catch(e){toast(e.message)}}
