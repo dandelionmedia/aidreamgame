@@ -176,6 +176,35 @@ function readCurrentQuestion(){
  const u=new SpeechSynthesisUtterance(words||COURSES[active]?.goal||'AI 탐험');u.lang='ko-KR';u.rate=classroom.grade==='low'?.84:.95;
  speechSynthesis.speak(u);
 }
+
+const timerKey=code=>LS('teacherTimer:'+code);
+let timerTick=null,timerCurrent='',timerNotice=false;
+function timerState(){
+ const code=$('sessionTeacher')?.value?.trim()?.toUpperCase()||'1119';
+ let state={elapsed:0,running:false,startedAt:0};
+ try{state={...state,...JSON.parse(localStorage.getItem(timerKey(code))||'{}')}}catch{}
+ return {code,state};
+}
+function renderTimer(){
+ const element=$('timerDisplay');if(!element)return;
+ const {code,state}=timerState(),elapsed=Math.max(0,Math.floor((state.elapsed+(state.running?Date.now()-state.startedAt:0))/1000));
+ const min=String(Math.floor(elapsed/60)).padStart(2,'0'),sec=String(elapsed%60).padStart(2,'0');
+ element.textContent=min+':'+sec+' / 90:00';
+ element.setAttribute('aria-label','수업 시간 '+min+'분 '+sec+'초 경과');
+ if(elapsed>=5400&&!timerNotice&&state.running){timerNotice=true;toast('⏰ 90분 수업 시간이 되었습니다. 마무리 활동을 진행하세요.')}
+ if(timerCurrent!==code){timerCurrent=code;timerNotice=false;}
+}
+function timerAction(which){
+ const {code,state}=timerState(),now=Date.now();
+ if(which==='start'&&!state.running){state.running=true;state.startedAt=now}
+ else if(which==='pause'&&state.running){state.elapsed+=Math.max(0,now-state.startedAt);state.running=false;state.startedAt=0}
+ else if(which==='reset'){
+  if(!confirm('선택한 수업의 타이머를 00:00으로 초기화할까요?'))return;
+  state.elapsed=0;state.running=false;state.startedAt=0;timerNotice=false;
+ }
+ localStorage.setItem(timerKey(code),JSON.stringify(state));renderTimer();
+}
+
 function setTeacherFields(c){
  $('classSchool').value=c.school||SCHOOL[c.code]?.name||'';
  $('classDate').value=c.date||SCHOOL[c.code]?.day||new Date().toISOString().slice(0,10);
@@ -261,6 +290,7 @@ async function changeStudent(){
 function teacherView(){show('teacherPage')}
 async function teacherLogin(){
  try{
+  if(classStop){classStop();classStop=null}
   $('loginTeacher').disabled=true;
   await api.teacherLogin($('teacherEmail').value.trim(),$('teacherPassword').value);
   authTeacher=true;$('teacherForm').classList.add('hidden');$('teacherDashboard').classList.remove('hidden');
@@ -272,6 +302,7 @@ function watchTeacher(){
  if(watchStudentsStop){watchStudentsStop();watchStudentsStop=null}
  const key=$('sessionTeacher').value.trim().toUpperCase();
  if(!/^[A-Z0-9]{4,8}$/.test(key))return toast('수업 코드를 확인해 주세요.');
+ renderTimer();
  if(teacherControlStop){teacherControlStop();teacherControlStop=null}
  teacherControlStop=api.watchLiteracyClassroom(key,setTeacherFields,e=>toast('수업 설정 조회 실패: '+e.message));
  watchStudentsStop=api.watchStudents(key,rows=>{studentsCache=rows;drawTeacher(rows)},e=>toast('학생 조회 오류: '+e.message))
@@ -311,7 +342,9 @@ if(localStorage.getItem(LS('contrast'))==='on')document.body.classList.add('high
 $('teacherOpen').onclick=teacherView;$('teacherClose').onclick=()=>authTeacher?toast('관리자 종료 버튼으로 로그아웃해 주세요.'):show('joinPage');
 $('loginTeacher').onclick=teacherLogin;$('logoutTeacher').onclick=teacherLogout;$('sessionTeacher').onchange=watchTeacher;
 $('clearClass').onclick=clearClass;
-$('saveTeacherClass').onclick=saveClassSettings;$('teacherRefresh').onclick=watchTeacher;
+$('saveTeacherClass').onclick=saveClassSettings;
+$('timerStart').onclick=()=>timerAction('start');$('timerPause').onclick=()=>timerAction('pause');$('timerReset').onclick=()=>timerAction('reset');
+timerTick=setInterval(renderTimer,1000);$('teacherRefresh').onclick=watchTeacher;
 $('sound').onclick=()=>{const on=toggleSound();$('sound').textContent=on?'🔊 효과음 켜짐':'🔇 효과음 꺼짐';toast(on?'효과음 켜짐':'효과음 꺼짐')};
 $('demoSchool').onchange=()=>{session=$('demoSchool').value;displaySchool()};
 init();
