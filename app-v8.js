@@ -93,6 +93,7 @@ function saveDraft(){
 function renderGame(){
  if(questRender(current,temp,$('game'),renderGame,playSound)){saveDraft();return;}
  renderCoreGame();
+ const root=$('game');root.insertAdjacentHTML('afterbegin','<div class="v8stages"><span>✅ 놀이</span><span>✅ AI 배움</span><span class="active">🎨 작품 만들기</span></div>');
  saveDraft();
 }
 function renderCoreGame(){const ans=student.answers||{},dream=ans['4']?.dream||'나의 꿈',title=ans['5']?.title||'꿈을 향한 멋진 도전',char=ans['6']?.character||'🐰';let h='';
@@ -146,6 +147,9 @@ const BONUS=[
 function renderStageArtifacts(){
  const el=$('stageArtifacts');if(!el||!student)return;
  const a=student.answers||{},out=[];
+ if(student.step>=1)out.push(['🔍','AI 탐정 도감','AI 물건 찾기 미션을 완료했어요.']);
+ if(student.step>=2)out.push(['🧭','안전한 AI 사용 배지','중요한 정보 확인과 개인정보 보호를 배웠어요.']);
+ if(student.step>=3)out.push(['🎁','AI 마법 카드 도감','글 · 그림 · 영상 · 소리의 종류를 알아보았어요.']);
  if(a['4']?.dream)out.push(['🌈','나의 꿈 카드',a['4'].dream+' · '+(a['4'].favorite||'관심')+' · '+(a['4'].reason||'도전')]);
  if(a['5']?.title)out.push(['📖','이야기 기획서',a['5'].title+' / 어려움: '+(a['5'].challenge||'미정')]);
  if(a['6']?.character)out.push(['🎨','캐릭터 설정표',a['6'].character+' · '+(a['6'].color||'옷')+' · '+(a['6'].prop||'소품')]);
