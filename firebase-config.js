@@ -3,8 +3,10 @@
  * 실제 개인정보 보호는 firestore.rules 와 Firebase Authentication 으로 강제합니다.
  */
 export const firebaseConfig = {
-  apiKey: 'PASTE_FIREBASE_API_KEY',
-  authDomain: 'PASTE_PROJECT_ID.firebaseapp.com',
-  projectId: 'PASTE_PROJECT_ID',
-  appId: 'PASTE_FIREBASE_APP_ID'
+  apiKey: "AIzaSyD3T2m27RROwUH34HLAwi2oXrJ8jQ0z23M",
+    authDomain: "ai-dream-game-class.firebaseapp.com",
+    projectId: "ai-dream-game-class",
+    storageBucket: "ai-dream-game-class.firebasestorage.app",
+    messagingSenderId: "221642284616",
+    appId: "1:221642284616:web:0b08e03fd4a323b093c27d"
 };
