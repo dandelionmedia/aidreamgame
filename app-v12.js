@@ -28,7 +28,7 @@ const fieldExamples=[
  [['개인정보 지키기','근거 확인하기','내 생각으로 판단하기'],['친구에게 설명하기','AI 답변 함께 확인하기','안전한 사용법 발표하기'],['확인하고 사용하기','비밀번호 입력하지 않기','AI를 도구로 활용하기']]
 ];
 let session='',student=null,active=-1,picks={},busy=false,watchStudentsStop=null,authTeacher=false,studentsCache=[];
-function dateKST(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+function dateKST(){const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const values={};parts.forEach(p=>values[p.type]=p.value);return values.year+'-'+values.month+'-'+values.day}
 function todaySession(){return Object.keys(SCHOOL).find(k=>SCHOOL[k].day===dateKST())||''}
 function show(page){['joinPage','homePage','gamePage','teacherPage'].forEach(id=>$(id).classList.toggle('hidden',id!==page));window.scrollTo({top:0,behavior:'smooth'})}
 function toast(t){$('toast').textContent=t;$('toast').classList.remove('hidden');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.add('hidden'),4000)}
