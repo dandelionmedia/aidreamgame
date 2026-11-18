@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Firebase 콘솔 > Authentication > 사용자 > 선생님 계정 UID로 변경해야 합니다.
+    function teacher() {return request.auth != null && request.auth.uid == 'REPLACE_WITH_TEACHER_UID';}
+    function isSession(s) {return s in ['1119','1120','1125'];}
+    function own(uid) {return request.auth != null && request.auth.uid == uid && request.auth.token.firebase.sign_in_provider == 'anonymous';}
+    // 학생 명단과 개인 답변은 다른 학생에게 노출하지 않습니다.
+    match /sessions/{session}/students/{uid} {
+      allow get: if teacher() || own(uid);
+      allow list: if teacher();
+      allow create: if isSession(session) && own(uid)
+        && request.resource.data.keys().hasOnly(['name','step','answers','joinedAt','updatedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 14
+        && request.resource.data.step == 0 && request.resource.data.answers == {}
+        && request.resource.data.joinedAt == request.time && request.resource.data.updatedAt == request.time
+        && ((session == '1119' && request.time >= timestamp.value('2026-11-18T15:00:00Z') && request.time < timestamp.value('2026-11-19T15:00:00Z'))
+          || (session == '1120' && request.time >= timestamp.value('2026-11-19T15:00:00Z') && request.time < timestamp.value('2026-11-20T15:00:00Z'))
+          || (session == '1125' && request.time >= timestamp.value('2026-11-24T15:00:00Z') && request.time < timestamp.value('2026-11-25T15:00:00Z')));
+      allow update: if own(uid)
+        && request.resource.data.keys().hasOnly(['name','step','answers','joinedAt','updatedAt'])
+        && request.resource.data.name == resource.data.name
+        && request.resource.data.joinedAt == resource.data.joinedAt
+        && request.resource.data.step is int
+        && request.resource.data.step >= resource.data.step
+        && request.resource.data.step <= resource.data.step + 1
+        && request.resource.data.step <= 8
+        && request.resource.data.answers is map
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+    match /{document=**} {allow read, write: if false;}
+  }
+}
