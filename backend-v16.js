@@ -112,7 +112,7 @@ const legacySchools={
   '1120':{school:'서울금북초등학교',date:'2026-11-20',code:'1120'},
   '1125':{school:'서울행현초등학교',date:'2026-11-25',code:'1125'}
 };
-const defaults=c=>({code:String(c).toUpperCase(),school:legacySchools[c]?.school||'',date:legacySchools[c]?.date||'',unlocked:15,paused:false,active:true,grade:'all',configured:false});
+const defaults=c=>({code:String(c).toUpperCase(),school:legacySchools[c]?.school||'',date:legacySchools[c]?.date||'',unlocked:legacySchools[c]?15:1,paused:false,active:true,grade:'all',configured:false});
 export async function findLiteracyClassroom(code){
  const c=String(code||'').trim().toUpperCase();
  if(!validCode(c))throw Error('수업 코드는 영문과 숫자 4~8자로 입력해 주세요.');
