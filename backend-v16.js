@@ -118,9 +118,16 @@ export async function findLiteracyClassroom(code){
  if(!validCode(c))throw Error('수업 코드는 영문과 숫자 4~8자로 입력해 주세요.');
  if(!live){return read('literacy:settings:'+c,null)|| (legacySchools[c]?defaults(c):null)}
  await anonymous();
- const snap=await sdk.F.getDoc(settingsPath(c));
- if(snap.exists())return {...defaults(c),...snap.data(),code:c,configured:true};
- return legacySchools[c]?defaults(c):null;
+ try{
+  const snap=await sdk.F.getDoc(settingsPath(c));
+  if(snap.exists())return {...defaults(c),...snap.data(),code:c,configured:true};
+  return legacySchools[c]?defaults(c):null;
+ }catch(e){
+  // Legacy classes remain usable before the new literacy rules are published.
+  // New class codes must always pass the configured-class lookup.
+  if(legacySchools[c]&&e?.code==='permission-denied')return defaults(c);
+  throw e;
+ }
 }
 export function watchLiteracyClassroom(code,handler,onError){
  const c=String(code||'').toUpperCase();
