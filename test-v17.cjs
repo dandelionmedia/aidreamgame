@@ -8,7 +8,7 @@ const file=name=>fs.readFileSync(name,'utf8');
 const stripExports=s=>s.replace(/^export /gm,'');
 const cleanImports=s=>s.replace(/^import .*;\s*/gm,'');
 function syntax(name){const text=file(name);new Function(stripExports(cleanImports(text)));console.log('✔ JavaScript syntax: '+name)}
-['app-v17.js','backend-v16.js','mini-games-v17.js','question-bank-v14.js','curriculum-v14.js'].forEach(syntax);
+['app-v17.js','backend-v16.js','mini-games-v17.js','question-guides-v17.js','question-bank-v14.js','curriculum-v14.js'].forEach(syntax);
 const questions=file('question-bank-v14.js');
 const courses=file('curriculum-v14.js');
 const study=new Function(stripExports(questions)+'\n'+stripExports(cleanImports(courses))+';return {COURSES,PRODUCTS,LEVELS,esc,verifyCourseData,createReport};')();
@@ -64,7 +64,7 @@ for(const token of ['function teacher()','function own(uid)','settings/literacy'
 console.log('✔ Security rules: key student/teacher access structure present (server deployment must be checked separately)');
 const appBody=cleanImports(app).split("$('classCheck').onclick=")[0];
 const invoke=new Function('COURSES','PRODUCTS','LEVELS','createReport','verifyCourseData','esc','renderMini','api','playSound','toggleSound','isSoundOn',
- appBody+'\nreturn {set:(i,p)=>{active=i;picks=p;student={name:"test",id:"test",answers:{aiLiteracyV17:{completed:{}}}}},phase:()=>phase(),finish:(i)=>{student.answers.aiLiteracyV17.completed[String(i+1)]={title:"OK"}}};');
+ appBody+'\nreturn {set:(i,p)=>{active=i;picks=p;student={name:"test",id:"test",answers:{aiLiteracyV16:{completed:{}}}}},phase:()=>phase(),finish:(i)=>{student.answers.aiLiteracyV16.completed[String(i+1)]={title:"OK"}}};');
 const h=invoke(study.COURSES,study.PRODUCTS,study.LEVELS,study.createReport,study.verifyCourseData,study.esc,mini.renderMini,{},()=>{},()=>{},()=>false);
 for(let chapter=0;chapter<15;chapter++){
  const choices={};h.set(chapter,choices);
