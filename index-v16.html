@@ -30,6 +30,8 @@
 <label>학년별 안내<select id="classGrade"><option value="all">전체 학년</option><option value="low">1~2학년</option><option value="mid">3~4학년</option><option value="high">5~6학년</option></select></label></div>
 <div class="settingToggles"><label><input type="checkbox" id="classPaused"> ⏸ 학생 진행 일시정지</label><label><input type="checkbox" id="classActive" checked> ✅ 학생 접속 허용</label></div>
 <button type="button" class="cta" id="saveTeacherClass">💾 수업 설정 저장 · 실시간 적용</button><p class="hint">새 수업은 영문·숫자 4~8자리 코드를 입력하고 설정을 저장하면 생성됩니다. 학생은 동일한 코드로 입장합니다.</p></section>
+<section class="lessonTimer"><h3>⏱️ 90분 수업 운영 타이머</h3><p class="hint">QR 입장 및 안내 10분 → 핵심 학습 60분 → 창작·발표 20분을 기준으로 운영할 수 있습니다.</p>
+<div class="timerRow"><strong id="timerDisplay">00:00 / 90:00</strong><button class="secondaryAction" id="timerStart" type="button">▶ 시작</button><button class="secondaryAction" id="timerPause" type="button">⏸ 멈춤</button><button class="secondaryAction" id="timerReset" type="button">↺ 초기화</button></div></section>
 <h3>📈 새 교육과정 학습 현황</h3><div id="teacherStats" class="stats"></div><h3>🎯 챕터별 완료 인원</h3><div id="teacherLevels" class="teacherLevels"></div><h3>👦 학생 명단과 진도</h3><p class="hint">기존 교육과정 기록은 새 진도에 포함되지 않습니다.</p><div id="teacherStudents" class="teacherStudents"></div>
 <div class="dangerPanel"><h3>🧹 학생 기록 정리</h3><p>개별 삭제와 수업 전체 초기화는 실제 Firebase 기록을 지웁니다. 삭제한 기록은 복구할 수 없습니다.</p><button type="button" id="clearClass" class="danger">🗑️ 선택한 수업의 학생 기록 전체 초기화</button></div></div>
 </div></section>
