@@ -125,16 +125,17 @@ export function renderLabGame(game,studentName,state,root,{onChange,onComplete,o
    html+='<div class="labReport"><div class="labStamp">🏆</div><h3>'+esc(report.title)+'</h3><p>'+esc(studentName)+' 탐험가의 결과물</p>'+fields+'<p class="labNote">'+esc(report.note)+'</p></div>';
    html+=btn('💾 결과 저장하고 게임 완료',false,'complete');
    root.innerHTML=html;
-   root.querySelector('[data-action="complete"]').onclick=()=>onComplete({game:id+1,title:report.title,sections:report.sections,note:report.note,finishedAt:new Date().toISOString()});
+   root.querySelector('[data-action="complete"]').onclick=()=>onComplete({game:id+1,title:report.title,sections:report.sections.map(([label,value])=>({label,value})),note:report.note,finishedAt:new Date().toISOString()});
  }
  root.querySelector('[data-back]').onclick=onBack;
 }
+const sectionPair=s=>Array.isArray(s)?[s[0],s[1]]:[s?.label,s?.value];
 export function renderSavedLabResult(name,record){
  if(!record||!Array.isArray(record.sections))return '';
- return '<div class="labReport"><div class="labStamp">🏆</div><h3>'+esc(record.title)+'</h3><p>'+esc(name)+' 탐험가의 결과물</p>'+record.sections.map(([k,v])=>'<div class="labReportRow"><b>'+esc(k)+'</b><p>'+esc(v)+'</p></div>').join('')+'<p class="labNote">'+esc(record.note||'')+'</p></div>';
+ return '<div class="labReport"><div class="labStamp">🏆</div><h3>'+esc(record.title)+'</h3><p>'+esc(name)+' 탐험가의 결과물</p>'+record.sections.map(item=>{const [k,v]=sectionPair(item);return '<div class="labReportRow"><b>'+esc(k)+'</b><p>'+esc(v)+'</p></div>'}).join('')+'<p class="labNote">'+esc(record.note||'')+'</p></div>';
 }
 export function downloadLabReport(name,record){
- const text=[record.title,'탐험가: '+name,'',...record.sections.map(([k,v])=>k+'\\n'+v+'\\n'),'',record.note||''].join('\\n');
+ const text=[record.title,'탐험가: '+name,'',...record.sections.map(item=>{const [k,v]=sectionPair(item);return k+'\\n'+v+'\\n'}),'',record.note||''].join('\\n');
  const c=document.createElement('canvas');c.width=1100;c.height=1500;
  const x=c.getContext('2d');if(!x)throw Error('이 기기에서는 이미지 저장을 사용할 수 없어요.');
  const grad=x.createLinearGradient(0,0,1100,1500);grad.addColorStop(0,'#243a87');grad.addColorStop(1,'#8c5ed6');x.fillStyle=grad;x.fillRect(0,0,1100,1500);
@@ -148,7 +149,8 @@ export function downloadLabReport(name,record){
    for(const ch of chars){if(x.measureText(line+ch).width>maxWidth&&line){x.fillText(line,115,y);y+=lineHeight;line='';count++;if(count>=maxLines)return;}line+=ch;}
    if(line){x.fillText(line,115,y);y+=lineHeight;}
  }
- for(const [key,value] of record.sections.slice(0,7)){
+ for(const item of record.sections.slice(0,7)){
+  const [key,value]=sectionPair(item);
   if(y>1300)break;
   x.fillStyle='#7763bc';x.font='bold 23px sans-serif';x.fillText(String(key),103,y);y+=39;
   x.fillStyle='#283c67';wrap(value,870,25,36,4);y+=34;
