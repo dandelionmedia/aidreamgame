@@ -1,0 +1,37 @@
+name: Validate AI Literacy V17
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'index-v17.html'
+      - 'app-v17.js'
+      - 'mini-games-v17.js'
+      - 'question-guides-v17.js'
+      - 'style-v17.css'
+      - 'curriculum-v14.js'
+      - 'question-bank-v14.js'
+      - 'test-v17.cjs'
+      - '.github/workflows/validate-v17.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'index-v17.html'
+      - 'app-v17.js'
+      - 'mini-games-v17.js'
+      - 'question-guides-v17.js'
+      - 'style-v17.css'
+      - 'curriculum-v14.js'
+      - 'question-bank-v14.js'
+      - 'test-v17.cjs'
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check elementary quiz content and game state progression
+        run: node test-v17.cjs
