@@ -2,7 +2,7 @@ import * as api from './backend-v7.js';
 import {isSoundOn,toggleSound,playSound} from './sound-v7.js';
 import {resultPreview,exportResultPng} from './artwork-v7.js';
 import {questRender,getQuestState} from './quests-v8.js';
-import {LAB_GAMES,renderLabGame,renderSavedLabResult,downloadLabReport} from './literacy-lab-v9.js';
+import {LAB_GAMES,renderLabGame,renderSavedLabResult,downloadLabReport} from './literacy-lab-v9.js?v=fix-20261119-1';
 const SESSIONS={1119:{date:'2026-11-19',label:'11월 19일',school:'마장아이꿈누리터',expected:12,planned:22},1120:{date:'2026-11-20',label:'11월 20일',school:'서울금북초등학교',expected:20,planned:30},1125:{date:'2026-11-25',label:'11월 25일',school:'서울행현초등학교',expected:18,planned:28}};
 const GAMES=[['🤖','AI 탐정 게임','AI가 사용되는 곳을 찾아요'],['🧐','AI 말이 진짜일까?','확인하는 습관을 배워요'],['🎁','AI 마법 상자','글·그림·영상·소리를 맞혀요'],['🌈','나의 꿈 찾기','좋아하는 꿈을 골라요'],['📖','이야기 제목 뽑기','나만의 이야기를 만들어요'],['🎨','나만의 주인공 꾸미기','꿈속 캐릭터를 꾸며요'],['🧩','이야기 6장면 퍼즐','장면을 순서대로 연결해요'],['🎬','나의 꿈 영화관','나의 작품을 감상해요']];
 const $=id=>document.getElementById(id), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -185,14 +185,17 @@ function renderLiteracyDone(record){
 }
 async function saveLiteracy(record){
  if(labSaving||!student)return;
- labSaving=true;const n=String(labIndex+1),answers={...(student.answers||{}),literacy:{...(student.answers?.literacy||{}),[n]:record}};
+ labSaving=true;
+ // Firestore does not allow nested arrays; represent each result row as an object.
+ const cleanRecord={...record,sections:(record.sections||[]).map(item=>Array.isArray(item)?{label:String(item[0]??''),value:String(item[1]??'')}:{label:String(item?.label??''),value:String(item?.value??'')})};
+ const n=String(labIndex+1),answers={...(student.answers||{}),literacy:{...(student.answers?.literacy||{}),[n]:cleanRecord}};
  const button=$('literacyGame').querySelector('[data-action="complete"]');
  if(button)button.disabled=true;
  try{
   await api.saveStudent(session,student.id,student.step,answers);
   student={...student,answers};
   localStorage.removeItem(labDraftKey(labIndex));
-  playSound('success');party();renderLiteracyDone(record);toast('🎉 AI 리터러시 게임 결과가 저장됐어요!');
+  playSound('success');party();renderLiteracyDone(cleanRecord);toast('🎉 AI 리터러시 게임 결과가 저장됐어요!');
  }catch(e){toast('결과 저장 실패: '+e.message);if(button)button.disabled=false}
  finally{labSaving=false;}
 }
