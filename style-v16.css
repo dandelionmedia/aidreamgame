@@ -395,3 +395,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .lessonTimer h3{margin:0 0 5px}.timerRow{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
 .timerRow strong{font-size:clamp(24px,2.6vw,32px);color:#384090;min-width:240px}
 @media(max-width:650px){.explanation{padding:15px}.explanation strong{font-size:19px}.explanation p{font-size:16px}.lessonTimer{padding:14px}.timerRow strong{width:100%;min-width:0}}
+
+/* Optional missions after the core classroom lesson */
+body[data-page="bonusPage"] .hero{display:none}
+.bonusWelcome{display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(145deg,#f4f3ff,#e8faff);border:2px solid #d7ddf5;border-radius:22px;padding:17px 20px;margin:21px 0;box-shadow:0 7px 0 #929dd54b}
+.bonusWelcome h3{font-size:19px;color:#354287;margin:0 0 6px}
+.bonusWelcome p{font-size:13px;line-height:1.7;margin:0;color:#596b8b}
+.bonusWelcome button{flex-shrink:0}
+.bonusGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.bonusCard{min-height:182px}.bonusCard strong{font-size:17px}
+@media(max-width:750px){.bonusGrid{grid-template-columns:1fr}.bonusCard{min-height:120px}.bonusWelcome{flex-wrap:wrap}.bonusWelcome button{width:100%}}
