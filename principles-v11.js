@@ -74,14 +74,14 @@ export function renderPrincipleGame(index,name,state,root,{onChange,onComplete,o
    body=title('누가 등장할까요?')+choose('actor',actors,actor)+title('어디에서 만날까요?')+choose('place',stages,place);
    preview=panel('<div class="p11scene">'+stages[place][0]+' '+actors[actor][0]+'</div><b>'+e(stages[place][1])+'의 '+e(actors[actor][1])+'</b><p>이 그림은 선택한 이모지로 즉시 꾸민 시뮬레이션 장면입니다. 실제 생성형 AI가 만든 이미지는 아니에요.</p>');
    result=[['주인공',actors[actor][1]],['배경',stages[place][1]],['완성 그림 주문',stages[place][1]+'에 서 있는 '+actors[actor][1]+'의 밝고 귀여운 그림을 만들어 줘.']];
-   tip='그림은 AI 서버에서 생성한 것이 아니라 브라우저의 그림 소재를 조합한 예시예요.';done=true;break;
+   tip='그림은 AI 서버에서 생성한 것이 아니라 브라우저의 그림 소재를 조합한 예시예요.';done=s.actor!==undefined&&s.place!==undefined;break;
  }
  case 1:{
    const actor=get('actor'),event=get('event'),ending=get('ending');
    body=title('이야기의 주인공')+choose('actor',actors,actor)+title('어떤 사건이 일어날까요?')+choose('event',events,event)+title('마지막은 어떻게 끝날까요?')+choose('ending',endings,ending);
    const story=actors[actor][1]+'은(는) '+stages[(actor+event)%3][1]+'에서 하루를 시작했어요. '+events[event][1]+'. 용기를 내서 방법을 찾았어요. 마지막에는 '+endings[ending][1]+'.';
    preview=panel('<h3>📖 나의 짧은 동화</h3><p>'+e(story)+'</p><small>사전 작성한 문장 조합으로 작동하는 교육용 이야기 제작입니다.</small>');
-   result=[['동화',story]];done=true;break;
+   result=[['동화',story]];done=s.actor!==undefined&&s.event!==undefined&&s.ending!==undefined;break;
  }
  case 2:{
    const seq=Array.isArray(s.seq)?s.seq:[],extension=Array.isArray(s.extension)?s.extension:[];
