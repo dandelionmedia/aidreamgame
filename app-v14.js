@@ -8,7 +8,7 @@ const SCHOOL={
  '1120':{day:'2026-11-20',label:'11월 20일',name:'서울금북초등학교'},
  '1125':{day:'2026-11-25',label:'11월 25일',name:'서울행현초등학교'}
 };
-const PREFIX='ai-literacy-v12:';
+const PREFIX='ai-literacy-v14:';
 const LS=s=>PREFIX+s;
 const fieldExamples=[
  [['AI를 이용하는 물건','AI가 아닌 도구','두 종류를 구분하고 싶어요'],['사진 속 물건 분류','음성비서 기능','AI에게 말로 질문하기'],['AI도 틀릴 수 있어요','스스로 판단하지 않는 도구도 있어요','중요한 정보는 확인해요']],
@@ -33,7 +33,7 @@ function todaySession(){return Object.keys(SCHOOL).find(k=>SCHOOL[k].day===dateK
 function show(page){['joinPage','homePage','gamePage','teacherPage'].forEach(id=>$(id).classList.toggle('hidden',id!==page));window.scrollTo({top:0,behavior:'smooth'})}
 function toast(t){$('toast').textContent=t;$('toast').classList.remove('hidden');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.add('hidden'),4000)}
 function displaySchool(){const s=SCHOOL[session];$('schoolName').textContent=s?s.name+' · '+s.label:'오늘 예정된 교육이 없어요';$('join').disabled=!s;$('studentName').disabled=!s}
-function results(){return student?.answers?.aiLiteracyV12?.completed||{}}
+function results(){return student?.answers?.aiLiteracyV14?.completed||{}}
 function doneCount(){return Object.values(results()).filter(x=>x&&x.title).length}
 function progressNote(){const d=doneCount();$('progressLabel').textContent=d+' / 15 챕터 완료';$('progressFill').style.width=(d/15*100)+'%'}
 function levelStatus(i){const done=!!results()[String(i+1)];const prior=i===0||!!results()[String(i)]?.title;return {done,available:done||prior}}
@@ -89,7 +89,7 @@ async function saveCompleted(){
  if(busy||!student)return;busy=true;
  const btn=$('gameContent').querySelector('[data-action="save"]');if(btn)btn.disabled=true;
  const report=createReport(active,picks,fieldExamples[active].map((opts,i)=>opts[picks['field'+i]||0]));
- const doc={...(student.answers||{}),aiLiteracyV12:{completed:{...results(),[String(active+1)]:report}}};
+ const doc={...(student.answers||{}),aiLiteracyV14:{completed:{...results(),[String(active+1)]:report}}};
  try{
   await api.saveStudent(session,student.id,student.step,doc);
   student={...student,answers:doc};localStorage.removeItem(draftKey(active));playSound('success');toast('🎉 작품 저장 완료! 다음 챕터가 열렸어요.');paintGame();
@@ -162,10 +162,10 @@ function watchTeacher(){
  watchStudentsStop=api.watchStudents(key,rows=>{studentsCache=rows;drawTeacher(rows)},e=>toast('학생 조회 오류: '+e.message))
 }
 function drawTeacher(rows){
- const total=rows.length,records=rows.map(x=>({student:x,completed:x.answers?.aiLiteracyV12?.completed||{}}));
+ const total=rows.length,records=rows.map(x=>({student:x,completed:x.answers?.aiLiteracyV14?.completed||{}}));
  $('teacherStats').innerHTML='<div class="teacherMetric"><strong>'+total+'</strong><span>등록 학생</span></div><div class="teacherMetric"><strong>'+records.filter(x=>Object.keys(x.completed).length===15).length+'</strong><span>전체 완주 학생</span></div><div class="teacherMetric"><strong>'+records.reduce((n,x)=>n+Object.keys(x.completed).length,0)+'</strong><span>완료한 챕터 총합</span></div>';
  $('teacherLevels').innerHTML=COURSES.map((c,i)=>{const n=records.filter(x=>x.completed[String(i+1)]?.title).length;return '<div class="teacherLevel"><span>'+c.icon+' '+esc(c.title)+'</span><strong>'+n+'명</strong><div class="tinyBar"><span style="width:'+(total?n/total*100:0)+'%"></span></div></div>'}).join('');
- $('teacherStudents').innerHTML=rows.slice().sort((a,b)=>Object.keys(b.answers?.aiLiteracyV12?.completed||{}).length-Object.keys(a.answers?.aiLiteracyV12?.completed||{}).length).map(x=>'<div class="teacherStudent"><strong>'+esc(x.name)+'</strong><span>새 교육과정 '+Object.keys(x.answers?.aiLiteracyV12?.completed||{}).length+' / 15</span><button class="danger" type="button" data-delete="'+esc(x.id)+'" data-name="'+esc(x.name)+'">이 학생 삭제</button></div>').join('')||'<p>등록한 학생이 없습니다.</p>';
+ $('teacherStudents').innerHTML=rows.slice().sort((a,b)=>Object.keys(b.answers?.aiLiteracyV14?.completed||{}).length-Object.keys(a.answers?.aiLiteracyV14?.completed||{}).length).map(x=>'<div class="teacherStudent"><strong>'+esc(x.name)+'</strong><span>새 교육과정 '+Object.keys(x.answers?.aiLiteracyV14?.completed||{}).length+' / 15</span><button class="danger" type="button" data-delete="'+esc(x.id)+'" data-name="'+esc(x.name)+'">이 학생 삭제</button></div>').join('')||'<p>등록한 학생이 없습니다.</p>';
  $('teacherStudents').querySelectorAll('[data-delete]').forEach(b=>b.onclick=async()=>{
   const key=$('sessionTeacher').value;
   if(!confirm('['+SCHOOL[key].name+'] '+b.dataset.name+' 학생의 모든 기록을 삭제할까요? 복구할 수 없습니다.'))return;
