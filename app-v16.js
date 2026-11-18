@@ -32,7 +32,7 @@ let session='',student=null,active=-1,picks={},busy=false,watchStudentsStop=null
 let classroom={unlocked:15,paused:false,active:true,grade:'all',school:'',date:''},classStop=null,teacherControlStop=null,checkpointTimer=null,checkpointQueue=Promise.resolve();
 function dateKST(){const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const values={};parts.forEach(p=>values[p.type]=p.value);return values.year+'-'+values.month+'-'+values.day}
 function todaySession(){return Object.keys(SCHOOL).find(k=>SCHOOL[k].day===dateKST())||''}
-function show(page){['joinPage','homePage','gamePage','teacherPage','portfolioPage'].forEach(id=>$(id).classList.toggle('hidden',id!==page));document.body.dataset.page=page;window.scrollTo({top:0,behavior:'smooth'})}
+function show(page){['joinPage','homePage','gamePage','teacherPage','portfolioPage','bonusPage'].forEach(id=>$(id).classList.toggle('hidden',id!==page));document.body.dataset.page=page;window.scrollTo({top:0,behavior:'smooth'})}
 function toast(t){$('toast').textContent=t;$('toast').classList.remove('hidden');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.add('hidden'),4000)}
 function displaySchool(){displayClass()}
 function results(){return student?.answers?.aiLiteracyV16?.completed||{}}
@@ -108,7 +108,7 @@ function paintGame(){
 }
 root.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{const v=Number(b.dataset.q),i=Number(p.split(':')[1]);picks['q'+i]=v;const correct=v===data.q[i][3];if(!correct){picks.misses={...(picks.misses||{}),['q'+i]:(picks.misses?.['q'+i]||0)+1}}playSound(correct?'correct':'wrong');persistDraft();paintGame()});
  root.querySelectorAll('[data-field]').forEach(b=>b.onclick=()=>{const i=Number(p.split(':')[1]);picks['field'+i]=Number(b.dataset.field);persistDraft();playSound('correct');paintGame()});
- root.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const k=b.dataset.action;if(k==='nextExplain'){picks['seen'+Number(p.split(':')[1])]=true;persistDraft();paintGame()}else if(k==='finishStudio'){picks.studentIdea=($('studentIdea')?.value||'').trim().slice(0,200);picks.studioDone=true;persistDraft();playSound('success');paintGame()}else if(k==='save')saveCompleted();else if(k==='download')downloadReport(done);else paintHome()});
+ root.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const k=b.dataset.action;if(k==='nextExplain'){picks['seen'+Number(p.split(':')[1])]=true;persistDraft();paintGame()}else if(k==='finishStudio'){picks.studentIdea=($('studentIdea')?.value||'').trim().slice(0,200);if(classroom.grade==='high'&&picks.studentIdea.length<10){toast('심화 학년은 자신의 생각을 10자 이상 적어 보세요.');return}picks.studioDone=true;persistDraft();playSound('success');paintGame()}else if(k==='save')saveCompleted();else if(k==='download')downloadReport(done);else paintHome()});
 }
 
 function reward(text){
@@ -174,6 +174,41 @@ function renderPortfolio(){
  }).join('')||'<p class="hint">완성한 작품이 없습니다. 첫 번째 챕터부터 도전해 보세요.</p>';
  $('portfolioItems').querySelectorAll('[data-save-report]').forEach(b=>b.onclick=()=>downloadReport(collection[String(Number(b.dataset.saveReport)+1)]));
 }
+
+const bonusGames=[
+ {chapter:0,slot:0,icon:'🤖',title:'AI 도구 분류 도전'},
+ {chapter:4,slot:2,icon:'🧩',title:'좋은 질문 순서 퍼즐'},
+ {chapter:10,slot:2,icon:'🔎',title:'팩트체크 짝맞추기'}
+];
+let bonusIndex=-1,bonusState={};
+const bonusKey=n=>LS('bonus:'+session+':'+student.id+':'+n);
+function showBonusList(){
+ if(!student)return;show('bonusPage');bonusIndex=-1;
+ const finished=bonusGames.filter((v,i)=>{try{return JSON.parse(localStorage.getItem(bonusKey(i))||'{}').done}catch{return false}}).length;
+ $('bonusProgress').textContent=finished+' / 3개 보너스 완료';
+ $('bonusContent').innerHTML='<div class="bonusGrid">'+bonusGames.map((b,i)=>'<button class="course bonusCard" data-bonus="'+i+'"><span class="courseIcon">'+b.icon+'</span><strong>'+esc(b.title)+'</strong><small>수업을 먼저 마친 친구를 위한 추가 탐험</small><em>'+(()=>{
+  try{return JSON.parse(localStorage.getItem(bonusKey(i))||'{}').done?'✅ 완료 · 다시 해보기':'▶ 도전 시작'}catch{return '▶ 도전 시작'}
+ })()+'</em></button>').join('')+'</div>';
+ $('bonusContent').querySelectorAll('[data-bonus]').forEach(b=>b.onclick=()=>openBonus(Number(b.dataset.bonus)));
+}
+function openBonus(n){
+ bonusIndex=n;
+ try{bonusState=JSON.parse(localStorage.getItem(bonusKey(n))||'{}')||{}}catch{bonusState={}}
+ if(bonusState.done)bonusState={picked:[]};
+ paintBonus();
+}
+function paintBonus(){
+ if(bonusIndex<0)return;
+ const b=bonusGames[bonusIndex],root=$('bonusContent');
+ const game=renderMini(b.chapter,b.slot,bonusState,{
+  onChange:v=>{bonusState=v;try{localStorage.setItem(bonusKey(bonusIndex),JSON.stringify(v))}catch{}paintBonus()},
+  onFinish:()=>{bonusState.done=true;localStorage.setItem(bonusKey(bonusIndex),JSON.stringify(bonusState));playSound('success');reward('보너스 도전 성공!');showBonusList()},
+  onSound:playSound
+ });
+ root.innerHTML='<h3 class="question">'+esc(b.icon+' '+b.title)+'</h3>'+game.html;
+ root.querySelectorAll('[data-mini]').forEach(btn=>btn.onclick=()=>game.apply(btn.dataset.mini));
+}
+
 function readCurrentQuestion(){
  if(!('speechSynthesis' in window))return toast('이 브라우저에는 음성 읽기 기능이 없어요.');
  speechSynthesis.cancel();
@@ -340,7 +375,7 @@ $('classCheck').onclick=async()=>{if(await applyCode($('classCode').value))toast
 $('classCode').onkeydown=e=>{if(e.key==='Enter')$('classCheck').click()};
 $('join').onclick=join;$('studentName').onkeydown=e=>{if(e.key==='Enter')join()};
 $('returnHome').onclick=paintHome;
-$('portfolioOpen').onclick=renderPortfolio;$('portfolioClose').onclick=paintHome;
+$('portfolioOpen').onclick=renderPortfolio;$('bonusOpen').onclick=showBonusList;$('bonusClose').onclick=paintHome;$('portfolioClose').onclick=paintHome;
 $('readQuestion').onclick=readCurrentQuestion;
 $('contrast').onclick=()=>{document.body.classList.toggle('highContrast');localStorage.setItem(LS('contrast'),document.body.classList.contains('highContrast')?'on':'off')};
 if(localStorage.getItem(LS('contrast'))==='on')document.body.classList.add('highContrast');$('switchStudent').onclick=changeStudent;
