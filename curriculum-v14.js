@@ -62,7 +62,13 @@ export const COURSES=[
 ['🕵️','AI 답변이 놀라운 내용을 말하면?',['근거를 확인해요','아무 확인 없이 퍼뜨려요'],0,'정보를 비판적으로 받아들이세요.'],
 ['🌱','AI를 쓰는 가장 좋은 태도는?',['내 생각으로 확인하고 배워요','모든 결정을 맡겨요'],0,'AI를 이용하되 사람의 판단을 잊지 마세요.']]}
 ];
-COURSES.forEach((course,i)=>{course.q=[...course.q,...EXTRA_QUESTIONS[i]];});
+COURSES.forEach((course,i)=>{
+  const additions=EXTRA_QUESTIONS[i].map((q,j)=>{
+    if((i+j)%2===1)return [q[0],q[1],[q[2][1],q[2][0]],1-q[3],q[4]];
+    return [...q];
+  });
+  course.q=[...course.q,...additions];
+});
 export const LEVELS=['기초 탐험','핵심 활용','심화 도전'];
 export const PRODUCTS=[
 ['🌈','AI 탐험가 카드','내가 배우고 싶은 AI 주제','우리 주변에서 AI 찾기','친구에게 설명할 한 문장'],
