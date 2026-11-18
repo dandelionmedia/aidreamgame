@@ -3,7 +3,7 @@ const isReady = firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('PAST
 export const live = !!isReady;
 let auth, db, sdk, app;
 const prefix = 'dream-v4-demo:';
-const read = (key, fallback) => {try{return JSON.parse(localStorage.getItem(prefix + key)) ?? fallback)}catch{return fallback}};
+const read = (key, fallback) => {try{return JSON.parse(localStorage.getItem(prefix + key)) ?? fallback}catch{return fallback}};
 const write = (key, val) => localStorage.setItem(prefix + key, JSON.stringify(val));
 function uuid(){return crypto.randomUUID?.() || Math.random().toString(36).slice(2)+Date.now()}
 export async function connect(){
