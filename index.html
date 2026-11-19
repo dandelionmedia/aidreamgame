@@ -1,10 +1,11 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1b276b"><title>AI 리터러시 탐험학교 V18 | 유쌤클래스</title>
-<link rel="stylesheet" href="style-v18.css?v=20261119-v18-premium"></head>
+<link rel="stylesheet" href="style-v18.css?v=20261119-v18-premium">
+<link rel="stylesheet" href="practice-prompt-style-v18.css?v=20261120-practice2"></head>
 <body><div class="backdrop" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="app">
-<header class="topbar"><a class="brand" href="./" aria-label="처음으로"><span class="brandIcon">✦</span><span>유쌤클래스<small>AI LITERACY ACADEMY</small></span></a><div class="navright"><span id="connection" class="connection">연결 확인 중</span><button type="button" class="utility" id="contrast" aria-label="고대비 모드 켜기 또는 끄기">◐ 고대비</button><button type="button" class="utility" id="sound">🔇 효과음 꺼짐</button><button class="utility" id="teacherOpen" type="button">👩‍🏫 선생님</button></div></header>
+<header class="topbar"><a class="brand" href="./" aria-label="처음으로"><span class="brandIcon">✦</span><span>유쌤클래스<small>AI LITERACY ACADEMY</small></span></a><div class="navright"><span id="connection" class="connection">연결 확인 중</span><button type="button" class="utility practiceTopNav" id="practiceTabOpen">📋 실습프롬프트</button><button type="button" class="utility" id="contrast" aria-label="고대비 모드 켜기 또는 끄기">◐ 고대비</button><button type="button" class="utility" id="sound">🔇 효과음 꺼짐</button><button class="utility" id="teacherOpen" type="button">👩‍🏫 선생님</button></div></header>
 <section class="hero"><div class="heroText"><div class="eyebrow">🎮 LEARN · PLAY · CREATE</div><h1>AI 리터러시<br><em>탐험학교!</em></h1><p>AI가 무엇인지 배우고, 재미있는 게임으로 연습하고,<br>나만의 AI 창작 작품을 완성해요.</p><div class="pills"><span>🌱 기초 5챕터</span><span>🚀 활용 5챕터</span><span>🏆 심화 5챕터</span></div></div><div class="heroArt" aria-hidden="true"><div class="orb">🌍</div><div class="rocket">🚀</div><span>✨</span><span>⭐</span></div></section>
 <p id="alert" class="alert hidden" role="alert"></p>
 <main>
@@ -22,6 +23,47 @@
 <section class="bonusWelcome"><div><h3>🌟 빠른 탐험가의 보너스 미션</h3><p>오늘의 활동을 먼저 마쳤다면 분류·순서·기억력 게임 3개에 도전해 보세요.</p></div><button id="bonusOpen" class="secondaryAction" type="button">🎮 보너스 게임존</button></section>
 <div id="finishedBadge" class="paper finish hidden"></div></section>
 <section id="gamePage" class="screen hidden"><div class="paper gamePanel"><div class="playTop"><button class="secondaryAction" type="button" id="returnHome">← 탐험 지도</button><button type="button" id="readQuestion" class="secondaryAction">🔊 문제 읽기</button><span id="gamePosition" class="stepTag">MISSION 01 / 15</span></div><div id="gameContent"></div><p id="saveInfo" class="hint" aria-live="polite"></p></div></section>
+<section id="promptPage" class="screen hidden" aria-labelledby="practicePageTitle">
+  <div class="practicePaper">
+    <div class="practiceHead">
+      <span class="practiceHeadIcon" aria-hidden="true">🎬</span>
+      <div>
+        <small>AI LITERACY · HANDS-ON PRACTICE</small>
+        <h2 id="practicePageTitle">📋 실습프롬프트</h2>
+        <p>내가 좋아하는 꿈을 AI 애니메이션 영상으로 만드는 실습이에요. 버튼 하나로 프롬프트 전체를 복사해 보세요!</p>
+      </div>
+      <button type="button" id="practiceTabBack" class="secondaryAction practiceBack">← 이전 화면으로</button>
+    </div>
+    <div class="practiceColumns">
+      <nav class="practiceTOC" aria-label="실습프롬프트 목차">
+        <h3>📚 실습 목차</h3>
+        <a id="practiceTocItem1" href="#practicePromptCard">1.내가 좋아하는 주제로 나의꿈 영상만들기
+          <small>초등학생용 · 9단계 AI 애니메이션 만들기</small>
+        </a>
+      </nav>
+      <article id="practicePromptCard" class="practiceItem">
+        <div class="practiceItemTitle">
+          <span class="practiceNumber">1</span>
+          <div>
+            <h3>1.내가 좋아하는 주제로 나의꿈 영상만들기</h3>
+            <p>내가 좋아하는 것부터 직업, 영화 제목, 6장면 이미지, 나레이션까지 AI 선생님과 함께 만들어 봐요.</p>
+          </div>
+        </div>
+        <div class="practiceChips"><span>🌟 STEP 1~9</span><span>🎬 30초 애니메이션</span><span>🎨 3D 캐릭터</span><span>📱 한 번에 복사</span></div>
+        <button type="button" id="practiceCopyButton" class="practiceCopyButton" aria-describedby="practiceCopyStatus">📋 프롬프트 복사하기</button>
+        <p id="practiceCopyStatus" role="status" aria-live="polite">초록색 버튼을 누르면 아래 실습 프롬프트 전체를 한 번에 복사해요!</p>
+        <label class="practiceTextLabel" for="practicePromptText">
+          <span>📝 실습 프롬프트 원문</span><small id="practiceCharCount"></small>
+        </label>
+        <textarea id="practicePromptText" readonly spellcheck="false" aria-label="9단계 애니메이션 제작 실습 프롬프트 전체 내용"></textarea>
+        <div class="practiceGuide"><strong>💡 실습 방법</strong>① 위 초록색 ‘프롬프트 복사하기’ 버튼을 눌러요.
+          ② ChatGPT 대화창을 열고 붙여넣어요.
+          ③ AI 선생님의 첫 번째 질문부터 차근차근 대답해요.
+          ④ 이미지 생성 기능을 사용할 수 있는 환경인지 확인해요.</div>
+      </article>
+    </div>
+  </div>
+</section>
 <section id="teacherPage" class="screen hidden"><div class="paper admin"><div class="sectionHead"><span class="bubble">📊</span><div class="grow"><small>TEACHER DASHBOARD</small><h2>AI 리터러시 강사 현황판</h2></div><button type="button" id="teacherClose" class="secondaryAction">학생 화면</button></div>
 <div id="teacherForm"><p class="hint">Firebase에 등록된 강사 계정으로 로그인합니다. 학생별 기록은 허가된 강사만 볼 수 있습니다.</p><label for="teacherEmail">강사 이메일</label><input id="teacherEmail" type="email" autocomplete="username" placeholder="강사 이메일"><label for="teacherPassword">비밀번호</label><input id="teacherPassword" type="password" autocomplete="current-password" placeholder="비밀번호"><button id="loginTeacher" type="button" class="cta">🔐 관리자 로그인</button></div>
 <div id="teacherDashboard" class="hidden"><div class="adminTop"><label for="sessionTeacher">수업 코드 입력 <input id="sessionTeacher" maxlength="8" placeholder="1119 또는 새 코드"></label><button type="button" id="teacherRefresh" class="secondaryAction">🔄 조회하기</button><button type="button" class="secondaryAction" id="logoutTeacher">로그아웃</button></div>
@@ -39,5 +81,6 @@
 <section id="bonusPage" class="screen hidden"><div class="paper"><div class="sectionHead"><span class="bubble">🎲</span><div class="grow"><small>OPTIONAL CLASSROOM MISSIONS</small><h2>보너스 AI 탐험관</h2><p id="bonusProgress" class="hint">0 / 3개 보너스 완료</p></div><button class="secondaryAction" id="bonusClose" type="button">← 탐험 지도</button></div><div id="bonusContent"></div></div></section>
 <section id="portfolioPage" class="screen hidden"><div class="paper"><div class="sectionHead"><span class="bubble">🗃️</span><div class="grow"><small>MY WORK</small><h2>나의 AI 작품 보관함</h2></div><button type="button" id="portfolioClose" class="secondaryAction">← 탐험 지도</button></div><p class="hint">완성한 챕터의 작품을 확인하고 PNG로 저장해 보세요.</p><div id="portfolioItems"></div></div></section>
 </main><footer>AI콘텐츠마케팅연구소 유쌤클래스 · 배우고 실행하는 AI<br>저학년부터 고학년까지 단계별 학습 · 모든 게임은 교육용 선택형 시뮬레이션</footer></div>
+<button type="button" id="practiceTopButton" aria-label="화면 맨위로 이동">↑ 맨위</button>
 <div class="toast hidden" id="toast" role="status" aria-live="polite"></div><div id="reward" class="reward hidden" role="status" aria-live="polite"></div>
-<script type="module" src="app-v18-five.js?v=20261119-v18-five"></script></body></html>
+<script type="module" src="app-v18-five-practice.js?v=20261120-practice2"></script></body></html>
