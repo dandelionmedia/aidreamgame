@@ -784,3 +784,11 @@ body[data-page="adventurePage"] .hero,body[data-page="studioPage"] .hero{display
 }
 @media(max-width:390px){.v19GameGrid{grid-template-columns:1fr}.v19GameCard{min-height:135px}.v19BotChoice{padding:11px 7px}.v19BotChoice>span{font-size:42px}}
 @media(prefers-reduced-motion:reduce){.v19BotFace{animation:none}.v19GameCard,.v19BotChoice,.v19Option{transition:none}}
+
+/* Evolving robot equipment is awarded at each XP level. */
+.v19BotFace{position:relative}
+.v19Evolution{position:absolute;right:-10px;top:-10px;font-size:26px;font-style:normal;filter:drop-shadow(0 5px 4px #45388a65);animation:v19BadgeFloat 3s ease-in-out infinite alternate}
+@keyframes v19BadgeFloat{to{transform:translateY(-5px) rotate(10deg)}}
+.highContrast .v19BotPanel,.highContrast .v19GameCard,.highContrast .v19StudioCard,.highContrast .v19Option{background:#fff!important;border:2px solid #2e3c68!important;color:#111e36!important}
+.highContrast .v19GameCard small,.highContrast .v19StudioCard small{color:#243758!important}
+@media(prefers-reduced-motion:reduce){.v19Evolution{animation:none}}
