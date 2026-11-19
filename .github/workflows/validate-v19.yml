@@ -1,0 +1,31 @@
+name: Validate AI Literacy V19
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'index-v19.html'
+      - 'app-v19.js'
+      - 'backend-v19.js'
+      - 'adventure-v19.js'
+      - 'style-v19.css'
+      - 'test-v19.cjs'
+      - '.github/workflows/validate-v19.yml'
+  pull_request:
+    paths:
+      - 'app-v19.js'
+      - 'backend-v19.js'
+      - 'adventure-v19.js'
+      - 'style-v19.css'
+      - 'test-v19.cjs'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify V19 game data, progression and page integrity
+        run: node test-v19.cjs
