@@ -56,7 +56,7 @@ export function checkContent(){
  if(BOTS.length!==4||GAMES.length!==5||ART_TYPES.length!==4||PROMPT.length!==4||DETECT.length!==3||TRAIN.length!==8||ESCAPE.length!==4||STORY.length!==5)throw Error('V19 콘텐츠가 부족합니다.');
  return true;
 }
-export function createAdventure({api,sound,notify,goHome,show,chapters}){
+export function createAdventure({api,sound,notify,goHome,show,chapters,canEnter}){
  let session='',student=null,state=blankAdventure(),game=-1,step=0,selected=[],feedback='',studio=-1,edit={},timer=null,queue=Promise.resolve();
  const $=id=>document.getElementById(id);
  const key=()=> 'aiv19:'+session+':'+student.id;
@@ -106,6 +106,7 @@ export function createAdventure({api,sound,notify,goHome,show,chapters}){
  }
  function startGame(n){
   if(!state.robot)return notify('먼저 나의 봇을 선택해 주세요.');
+  if(canEnter&&!canEnter())return notify('선생님이 수업을 일시정지했어요.');
   game=n;step=0;selected=[];feedback='';show('adventurePage');renderGame();
  }
  function reward(result){
@@ -160,6 +161,7 @@ export function createAdventure({api,sound,notify,goHome,show,chapters}){
  }
  function openStudio(){
   if(!state.robot)return notify('먼저 나의 봇을 선택해 주세요.');
+  if(canEnter&&!canEnter())return notify('선생님이 수업을 일시정지했어요.');
   studio=-1;show('studioPage');renderStudio();
  }
  function renderStudio(){
