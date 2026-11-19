@@ -61,6 +61,7 @@ export function createAdventure({api,sound,notify,goHome,show,chapters,canEnter}
  const $=id=>document.getElementById(id);
  const key=()=> 'aiv19:'+session+':'+student.id;
  const robot=()=>BOTS.find(x=>x.id===state.robot)||BOTS[0];
+ const evolution=()=>['🌱','✨','🔍','🛡️','👑'][botLevel(xp())-1];
  const xp=()=>totalXP(state,chapters());
  const save=()=>{
   if(!student)return queue;
@@ -94,12 +95,12 @@ export function createAdventure({api,sound,notify,goHome,show,chapters,canEnter}
   const root=$('adventureHub');if(!student||!root)return;
   const b=robot(),level=botLevel(xp()),chosen=!!state.robot;
   const avatar=chosen?
-   '<div class="v19BotPanel"><div class="v19BotFace" style="--bot-color:'+b.color+'">'+b.icon+'</div><div class="v19BotText"><strong>'+esc(b.name)+' · LV.'+level+'</strong><span>'+esc(levelName(level))+'</span><p>'+esc(b.tag)+'</p><div class="v19XpBar"><span style="width:'+(level===5?100:xp()%100)+'%"></span></div><small>⭐ '+xp()+' 경험치 · 게임 '+Object.values(state.games).filter(x=>x.done).length+'/5 · 작품 '+Object.keys(state.artifacts).length+'/4</small></div><button type="button" id="v19ChangeBot" class="v19Alt">봇 바꾸기</button></div>':
+   '<div class="v19BotPanel"><div class="v19BotFace" style="--bot-color:'+b.color+'">'+b.icon+'<i class="v19Evolution">'+evolution()+'</i></div><div class="v19BotText"><strong>'+esc(b.name)+' · LV.'+level+'</strong><span>'+esc(levelName(level))+'</span><p>'+esc(b.tag)+'</p><div class="v19XpBar"><span style="width:'+(level===5?100:xp()%100)+'%"></span></div><small>⭐ '+xp()+' 경험치 · 게임 '+Object.values(state.games).filter(x=>x.done).length+'/5 · 작품 '+Object.keys(state.artifacts).length+'/4 · 배지 '+(Object.values(state.games).filter(x=>x.done).length+Object.keys(state.artifacts).length)+'개</small></div><button type="button" id="v19ChangeBot" class="v19Alt">봇 바꾸기</button></div>':
    '<div class="v19Choose"><h3>🎉 나의 AI 봇을 선택해요!</h3><div class="v19BotGrid">'+BOTS.map(x=>'<button type="button" data-bot="'+x.id+'" class="v19BotChoice" style="--bot-color:'+x.color+'"><span>'+x.icon+'</span><strong>'+x.name+'</strong><small>'+x.tag+'</small></button>').join('')+'</div></div>';
   root.innerHTML='<div class="v19SectionTitle"><small>✨ ADVENTURE WORLD V19</small><h2>나와 함께 성장하는 AI 탐험 월드</h2><p>다섯 가지 모험을 즐기고 나만의 작품까지 만들어 봐요!</p></div>'+avatar+
   '<div class="v19SectionTitle compact"><h3>🎮 새로운 AI 게임 5종</h3><span>미션마다 별과 경험치를 모아요</span></div><div class="v19GameGrid">'+GAMES.map((g,i)=>'<button type="button" data-game="'+i+'" class="v19GameCard" '+(!chosen?'disabled':'')+'><span>'+g[1]+'</span><strong>'+g[2]+'</strong><small>'+g[3]+'</small><em>'+(state.games[g[0]]?.done?'✅ 완료 · 다시 도전':'▶ 게임 시작')+'</em></button>').join('')+'</div>'+
   '<div class="v19StudioEntry"><div><h3>🎨 나만의 AI 창작 스튜디오</h3><p>안전 포스터, 질문 카드, 동화, 약속 카드를 직접 편집하고 PNG로 저장해요!</p></div><button id="v19StudioOpen" type="button" class="v19Action" '+(!chosen?'disabled':'')+'>창작 스튜디오 입장</button></div><p id="v19SaveNote" class="v19SaveNote" aria-live="polite">나만의 모험 기록은 안전하게 보관해요.</p>';
-  root.querySelectorAll('[data-bot]').forEach(btn=>btn.onclick=()=>{state.robot=btn.dataset.bot;changed();sound('success');notify(robot().name+'과 탐험을 시작해요!')});
+  root.querySelectorAll('[data-bot]').forEach(btn=>btn.onclick=()=>{if(canEnter&&!canEnter())return notify('선생님이 수업 진행을 일시정지했어요.');state.robot=btn.dataset.bot;changed();sound('success');notify(robot().name+'과 탐험을 시작해요!')});
   root.querySelectorAll('[data-game]').forEach(btn=>btn.onclick=()=>startGame(Number(btn.dataset.game)));
   root.querySelector('#v19StudioOpen').onclick=()=>openStudio();
   const change=root.querySelector('#v19ChangeBot');if(change)change.onclick=()=>{state.robot=null;changed()};
@@ -116,6 +117,7 @@ export function createAdventure({api,sound,notify,goHome,show,chapters,canEnter}
   changed();sound('success');revealAward(GAMES[game][2]+' 클리어!');renderGame();
  }
  function choiceClick(n){
+  if(canEnter&&!canEnter())return notify('선생님이 수업 진행을 일시정지했어요.');
   if(game===0){selected.push(n);if(step===3)reward(PROMPT.map((p,i)=>p[1][selected[i]]).join(' · '));else{step++;feedback='✨ 마법 카드가 완성되고 있어요!';sound('correct');renderGame()}}
   else if(game===4){selected.push(n);if(step===4)reward(storyText(STORY.map((p,i)=>p[1][selected[i]])));else{step++;feedback='📖 이야기가 다음 장면으로 이어져요!';sound('correct');renderGame()}}
   else{
@@ -174,9 +176,9 @@ export function createAdventure({api,sound,notify,goHome,show,chapters,canEnter}
   root.innerHTML='<div class="v19EditorHead"><button id="v19AllArt" class="v19Alt">← 작품 목록</button><strong>'+type[1]+' '+rootTitle+'</strong></div><div class="v19EditorGrid"><div class="v19Controls"><label for="v19Title">작품 제목</label><input id="v19Title" maxlength="50" value="'+esc(edit.title)+'"><label for="v19Text">내가 만든 내용</label><textarea id="v19Text" maxlength="950" rows="9">'+esc(edit.text)+'</textarea><p class="v19SafetyNote">🔒 친구의 이름·전화번호·주소·비밀번호는 적지 않아요.</p><strong>🎨 카드 색깔</strong><div class="v19Colors">'+COLORS.map(c=>'<button data-color="'+c+'" style="--swatch:'+c+'" aria-label="'+c+' 색상" class="'+(c===edit.color?'selected':'')+'"></button>').join('')+'</div><div class="v19EditorButtons"><button class="v19Action" id="v19Save">💾 작품 저장</button><button class="v19Alt" id="v19Download">🖼️ PNG 저장</button></div></div><div class="v19Preview" id="v19Preview" style="--paint:'+edit.color+'"><span>'+edit.icon+'</span><h3>'+esc(edit.title)+'</h3><p>'+esc(edit.text)+'</p><small>AI 리터러시 탐험학교 · '+esc(student.name)+'</small></div></div>';
   const sync=()=>{edit.title=$('v19Title').value.slice(0,50);edit.text=$('v19Text').value.slice(0,950);$('v19Preview').querySelector('h3').textContent=edit.title;$('v19Preview').querySelector('p').textContent=edit.text};
   $('v19Title').oninput=sync;$('v19Text').oninput=sync;
-  root.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{sync();edit.color=b.dataset.color;renderStudio()});
+  root.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{if(canEnter&&!canEnter())return notify('선생님이 수업 진행을 일시정지했어요.');sync();edit.color=b.dataset.color;renderStudio()});
   $('v19AllArt').onclick=()=>{studio=-1;renderStudio()};
-  $('v19Save').onclick=()=>{sync();if(!edit.title.trim()||!edit.text.trim())return notify('제목과 내용을 입력해 주세요.');const id=type[0],first=!state.artifacts[id];state.artifacts[id]={...edit,savedAt:new Date().toISOString()};changed();sound('success');revealAward(first?'내 첫 창작 작품 완성!':'작품을 다시 저장했어요!');notify(first?'작품 완성! 경험치 50XP를 얻었어요.':'작품 수정 내용을 저장했어요.')};
+  $('v19Save').onclick=()=>{if(canEnter&&!canEnter())return notify('선생님이 수업 진행을 일시정지했어요.');sync();if(!edit.title.trim()||!edit.text.trim())return notify('제목과 내용을 입력해 주세요.');const id=type[0],first=!state.artifacts[id];state.artifacts[id]={...edit,savedAt:new Date().toISOString()};changed();sound('success');revealAward(first?'내 첫 창작 작품 완성!':'작품을 다시 저장했어요!');notify(first?'작품 완성! 경험치 50XP를 얻었어요.':'작품 수정 내용을 저장했어요.')};
   $('v19Download').onclick=()=>{sync();download()};
  }
  function download(){
