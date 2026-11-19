@@ -1,0 +1,44 @@
+
+/* Standalone practice prompt tab styles; isolated from the V18 quiz and Firebase UI. */
+#promptPage{max-width:1160px;margin:0 auto 36px}
+.practiceTopNav{background:linear-gradient(135deg,#7569e8,#5547c1)!important;color:#fff!important;border:1px solid #b6acff!important;box-shadow:inset 0 2px 0 #ffffff7b,0 5px 0 #43369865,0 13px 18px #6656ac34!important;white-space:nowrap}
+.practiceTopNav.practiceNavActive{background:linear-gradient(135deg,#5843c2,#856be7)!important}
+.practicePaper{padding:clamp(17px,3vw,31px);background:linear-gradient(152deg,#fff,#f8faff);border:1px solid #d9e2fa;border-radius:26px;box-shadow:inset 0 2px 0 #fff,0 8px 0 #a3a9dc40,0 22px 30px #394b8b27}
+.practiceHead{display:flex;align-items:center;gap:14px;margin-bottom:21px}
+.practiceHeadIcon{font-size:37px;line-height:1.2;padding:11px;background:radial-gradient(circle at 27% 14%,#fff,#e3e0ff 80%);border-radius:18px;box-shadow:inset 0 2px 0 #fff,0 6px 0 #aea3df62}
+.practiceHead small{font-size:11px;letter-spacing:1.6px;color:#6552b3;font-weight:900}
+.practiceHead h2{font-size:clamp(22px,3vw,32px);margin:4px 0 7px;color:#293874}
+.practiceHead p{font-size:14px;color:#586d91;margin:0}
+.practiceBack{margin-left:auto;flex-shrink:0}
+.practiceColumns{display:grid;grid-template-columns:minmax(210px,270px) minmax(0,1fr);gap:18px;align-items:start}
+.practiceTOC{padding:18px;border-radius:20px;background:linear-gradient(145deg,#f4f9ff,#efeaff);border:1px solid #d6ddfb;box-shadow:inset 0 2px 0 #fff,0 5px 0 #acb1df43}
+.practiceTOC h3{margin:0 0 13px;font-size:20px;color:#334183}
+.practiceTOC a{display:block;padding:15px 13px;border-radius:15px;text-decoration:none;color:#344685;font-size:14px;line-height:1.55;font-weight:900;background:#fff;border:1px solid #d9dff6;box-shadow:0 5px 0 #bbc1ea61,0 11px 14px #6676aa1b}
+.practiceTOC a:hover{background:#f9f6ff;transform:translateY(-2px)}
+.practiceTOC small{display:block;margin-top:7px;color:#7985a4;font-size:12px;font-weight:600}
+.practiceItem{min-width:0;border-radius:22px;background:linear-gradient(155deg,#fff,#fafaff);border:1px solid #d7e0f8;box-shadow:inset 0 2px 0 #fff,0 7px 0 #9aa9de47,0 17px 24px #4a589522;padding:clamp(15px,2vw,23px);scroll-margin-top:24px}
+.practiceItemTitle{display:flex;align-items:flex-start;gap:12px}
+.practiceItemTitle .practiceNumber{display:grid;place-items:center;width:45px;height:45px;min-width:45px;border-radius:15px;background:linear-gradient(145deg,#9e94f5,#6956d6);font-size:21px;color:#fff;font-weight:900;box-shadow:inset 0 2px 0 #ffffff65,0 5px 0 #5c47b561}
+.practiceItemTitle h3{font-size:clamp(19px,2.25vw,25px);line-height:1.35;color:#253679;margin:2px 0 9px}
+.practiceItemTitle p{font-size:14px;margin:0;color:#566b92;line-height:1.65}
+.practiceChips{display:flex;gap:8px;flex-wrap:wrap;margin:17px 0}
+.practiceChips span{display:inline-block;font-size:11px;font-weight:800;color:#574f9c;padding:7px 10px;border-radius:999px;background:#f0edff;border:1px solid #ded8fa}
+.practiceCopyButton{display:block;width:100%;min-height:69px;border-radius:19px;padding:15px 22px;font-size:clamp(19px,2.2vw,25px);font-weight:900;border:2px solid #a1f1bd;color:#fff;background:linear-gradient(180deg,#48e78b 0%,#20bd61 58%,#149e4b 100%);text-shadow:0 2px 2px #08672b4f;box-shadow:inset 0 3px 0 #ffffff83,inset 0 -4px 7px #096c3978,0 9px 0 #087d3a,0 19px 25px #1b92554a;transition:transform .14s,box-shadow .14s,background .2s;cursor:pointer}
+.practiceCopyButton:hover{transform:translateY(-3px);box-shadow:inset 0 3px 0 #ffffff83,0 12px 0 #087d3a,0 24px 28px #1b92554a}
+.practiceCopyButton:active{transform:translateY(5px);box-shadow:0 4px 0 #087d3a}
+.practiceCopyButton.practiceCopied{background:linear-gradient(180deg,#ff8585 0%,#f3484c 48%,#cb292d 100%);border-color:#ffbbbb;box-shadow:inset 0 3px 0 #ffffff6b,inset 0 -4px 8px #862a2a63,0 9px 0 #a91c21,0 19px 25px #ca42464b}
+.practiceCopyButton.practiceCopied:hover{box-shadow:inset 0 3px 0 #ffffff6b,0 12px 0 #a91c21,0 23px 28px #ca42464b}
+#practiceCopyStatus{margin:14px 0;font-size:14px;color:#39674d;line-height:1.5;min-height:22px;font-weight:800}
+.practiceTextLabel{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:#283b78;font-weight:800;margin:18px 0 10px}
+.practiceTextLabel small{font-size:12px;color:#7b87a4;font-weight:600}
+#practicePromptText{width:100%;height:clamp(400px,55vh,680px);display:block;resize:vertical;overflow:auto;border:2px solid #d8e1f8;border-radius:17px;background:#fcfdff;color:#30456c;font:500 14px/1.85 'Noto Sans KR',system-ui,sans-serif;white-space:pre-wrap;padding:19px;box-shadow:inset 0 3px 8px #6f89bd1a;outline-offset:3px}
+#practicePromptText:focus{outline:3px solid #8665d4}
+.practiceGuide{margin-top:17px;border-radius:16px;background:linear-gradient(145deg,#fff8e8,#fffdfa);border:1px solid #f1ddb2;padding:15px 17px;line-height:1.7;color:#684d23;font-size:14px}
+.practiceGuide strong{display:block;margin-bottom:5px;color:#7c4d17}
+#practiceTopButton{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));z-index:100;display:flex;align-items:center;gap:6px;padding:12px 17px;min-height:48px;border-radius:999px;border:1px solid #c1b0ff;color:white;background:linear-gradient(150deg,#8d79ef,#5b4abf);font-size:15px;font-weight:900;box-shadow:inset 0 2px 0 #ffffff82,0 6px 0 #4f3a9a8a,0 13px 20px #4531a34f;cursor:pointer}
+#practiceTopButton:hover{transform:translateY(-3px)}
+#practiceTopButton:active{transform:translateY(3px);box-shadow:0 3px 0 #4f3a9a8a}
+@media(min-width:961px){.practiceTOC{position:sticky;top:20px}}
+@media(max-width:960px){.practiceColumns{grid-template-columns:1fr}.practiceTOC{position:static}}
+@media(max-width:680px){.practiceHead{flex-wrap:wrap;gap:10px}.practiceHeadIcon{font-size:26px;padding:9px}.practiceBack{margin:2px 0 0;width:100%}.practiceTOC{padding:13px}.practiceTOC a{font-size:14px}.practiceCopyButton{font-size:19px;min-height:63px;padding:13px 15px}#practicePromptText{font-size:13px;line-height:1.75;height:450px;padding:12px}.practiceItemTitle .practiceNumber{width:37px;height:37px;min-width:37px}.practiceItemTitle h3{font-size:19px}#practiceTopButton{right:12px;bottom:calc(12px + env(safe-area-inset-bottom));padding:10px 15px}}
+@media(prefers-reduced-motion:reduce){.practiceCopyButton,#practiceTopButton{transition:none!important;animation:none!important}}
