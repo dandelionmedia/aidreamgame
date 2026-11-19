@@ -405,6 +405,7 @@ $('classCheck').onclick=async()=>{if(await applyCode($('classCode').value))toast
 $('classCode').onkeydown=e=>{if(e.key==='Enter')$('classCheck').click()};
 $('join').onclick=join;$('studentName').onkeydown=e=>{if(e.key==='Enter')join()};
 $('returnHome').onclick=paintHome;
+$('v19StudioHome').onclick=paintHome;
 $('portfolioOpen').onclick=renderPortfolio;$('bonusOpen').onclick=showBonusList;$('bonusClose').onclick=paintHome;$('portfolioClose').onclick=paintHome;
 $('readQuestion').onclick=readCurrentQuestion;
 $('contrast').onclick=()=>{document.body.classList.toggle('highContrast');localStorage.setItem(LS('contrast'),document.body.classList.contains('highContrast')?'on':'off')};
