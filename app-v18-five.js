@@ -98,7 +98,7 @@ function paintGame(){
   if(classroom.grade==='high')html+=guideCard('스스로 생각하는 질문','친구에게 왜 이 선택이 알맞은지 자신의 말로 설명해 보세요.','🧠');
   html+='<button type="button" class="cta" data-action="nextExplain">이해했어요! 다음 문제로 →</button>';
  }else if(p.startsWith('quiz:')){
-  const i=Number(p.split(':')[1]),q=data.q[i],guide=getQuestionGuide(active,i,q),choice=picks['q'+i],wrong=choice!==undefined&&choice!==q[3];
+  const i=Number(p.split(':')[1]),q=data.q[i],guide=getQuestionGuide(active,PICKED_QUESTION_INDICES[i],q),choice=picks['q'+i],wrong=choice!==undefined&&choice!==q[3];
   html+=quizHeading(i,guide,'생활 속 문제 해결');
   html+='<h3 class="question">'+esc(guide.question)+'</h3>';
   html+='<div class="childHint">💭 '+esc(guide.hint)+'</div>';
