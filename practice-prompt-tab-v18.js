@@ -1,4 +1,4 @@
-import {DREAM_PROMPT} from './practice-prompt-content-v18.js';
+import {DREAM_PROMPT} from './practice-prompt-content-v18.js?v=20261120-storyboards-3';
 
 export function setupPracticePrompt({showPage}) {
   const byId=id=>document.getElementById(id);
