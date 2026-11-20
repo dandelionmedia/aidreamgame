@@ -1,6 +1,6 @@
 
 import * as api from './backend-v16.js';
-import {setupPracticePrompt} from './practice-prompt-tab-v18.js';
+import {setupPracticePrompt} from './practice-prompt-tab-v18.js?v=20261120-storyboards-3';
 import {COURSES,FULL_COURSES,PICKED_QUESTION_INDICES,LEVELS,PRODUCTS,esc,createReport,verifyCourseData} from './curriculum-v18-five.js';
 import {isSoundOn,toggleSound,playSound} from './sound-v11.js';
 import {renderMini} from './mini-games-v17.js';
